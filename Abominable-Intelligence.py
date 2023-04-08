@@ -9,7 +9,7 @@ import subprocess
 import interactions
 import yaml
 
-os.chdir(os.path.dirname(sys.argv[0]))
+os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
 ## logs for journal
 DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
@@ -45,7 +45,7 @@ async def dice(ctx: interactions.CommandContext):
 @bot.command(description="GitHub management commands")
 async def git(ctx: interactions.CommandContext):
     pass
-        
+
 @git.subcommand(description="check remote branches")
 async def branches(ctx: interactions.CommandContext):
     branches = subprocess.check_output(['git', 'branch', '-r']).decode()
