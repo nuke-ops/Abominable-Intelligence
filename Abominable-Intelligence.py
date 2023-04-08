@@ -5,8 +5,9 @@ import interactions
 import yaml
 
 ## logs for journal
+DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(level_name)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ async def _dice(ctx: interactions.CommandContext):
 @bot.event
 async def on_ready():
     print("Bot started, I think")
-    logger.warning('Abominable intelligence has started!')
+    logger.log(INFO, 'Abominable intelligence has started!')
 
 
 bot.start()
