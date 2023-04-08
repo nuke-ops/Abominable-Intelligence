@@ -9,7 +9,7 @@ import subprocess
 import interactions
 import yaml
 
-os.chdir("/opt/Abominable-Intelligence")
+os.chdir(os.path.dirname(sys.argv[0]))
 
 ## logs for journal
 DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
@@ -30,30 +30,34 @@ bot = interactions.Client(
     default_scope=guild_id,
 )
 
+def list_branches():
+    branches = subprocess.check_output('git branch -r'.split()).decode
+    return [x.replace("origin/", "").replace("->", "").strip() for x in branches().split("\n") if x and "origin/HEAD" not in x]
 
 @bot.command(
     name="dice",
     description="funny dice",
 )
-async def _dice(ctx: interactions.CommandContext):
+async def dice(ctx: interactions.CommandContext):
     await ctx.send(randint(1,99))
 
-#todo? merge both branch functions into one
-@bot.command(
-    name="git-branch-check",
-    description="check remote branches",
-)
-async def _branch_check(ctx: interactions.CommandContext):
-        a = subprocess.check_output(['git', 'branch', '-r'])
-        await ctx.send(a.decode())
+
+@bot.command(description="GitHub management commands")
+async def git(ctx: interactions.CommandContext):
+    pass
         
-@bot.command(
-    name="git-branch-set",
-    description="sets active branch",
-)
-async def _branch_check(ctx: interactions.CommandContext, branch: str):
-        a = subprocess.check_output(['git', 'checkout', branch])
-        await ctx.send(a.decode())
+@git.subcommand(description="check remote branches")
+async def branches(ctx: interactions.CommandContext):
+    branches = subprocess.check_output(['git', 'branch', '-r']).decode()
+    await ctx.send(branches)
+
+@git.subcommand(description="switch active branch")
+@interactions.option(required=True, choices = [interactions.Choice(name=branch, value=branch) for branch in list_branches()])
+async def checkout(ctx: interactions.CommandContext, branch: str):
+    branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
+    branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
+    await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
+
 
 @bot.command(
     name="update",
@@ -62,8 +66,8 @@ async def _branch_check(ctx: interactions.CommandContext, branch: str):
 async def _update(ctx: interactions.CommandContext):
         await ctx.send("Pulling code from github...")
         try:
-                a = subprocess.check_output(['git', 'pull'])
-                await ctx.send(a.decode("ascii"))
+                pull = subprocess.check_output(['git', 'pull']).decode("ascii")
+                await ctx.send(pull)
 
                 # if updated successfully, restart the bot
                 await ctx.send("Restarting the bot...")
