@@ -11,7 +11,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
+# config
 with open("config.yaml") as conf:
 	f = yaml.load(conf, Loader=yaml.FullLoader)
 	bot_token = f["bot_token"]
@@ -23,19 +23,20 @@ bot = interactions.Client(
     default_scope=guild_id,
 )
 
+##
+## functions
+##
 
-@bot.command(
-    name="dice",
-    description="funny dice",
-)
+# dice
+@bot.command(name="dice",
+             description="1d100")
 async def _dice(ctx: interactions.CommandContext):
-    await ctx.send(randint(1,99))
+    await ctx.send(randint(1,100))
 
-
+   
 @bot.event
 async def on_ready():
     print("Bot started, I think")
     logger.log(INFO, 'Abominable intelligence has started!')
 
-
-bot.start()
+    bot.start()
