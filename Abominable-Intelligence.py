@@ -36,10 +36,10 @@ def list_branches():
 
 @bot.command(
     name="dice",
-    description="funny dice",
+    description="roll 1d100",
 )
 async def dice(ctx: interactions.CommandContext):
-    await ctx.send(randint(1,99))
+    await ctx.send(randint(1,100))
 
 
 @bot.command(description="GitHub management commands")
