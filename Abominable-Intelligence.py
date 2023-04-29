@@ -6,7 +6,7 @@ from random import randint
 
 import yaml
 from interactions import (Client, OptionType, SlashCommandChoice, SlashContext,
-                          slash_command, slash_option, subcommand, slash_int_option)
+                          slash_command, slash_option, subcommand, slash_int_option, slash_default_member_permission, Permissions)
 
 # set os path to bot location for git related commands
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -28,6 +28,7 @@ with open("config.yaml") as conf:
 bot = Client(
     token=bot_token,
     default_scope=guild_id,
+    sync_interactions=True
 )
 
 ##
@@ -42,7 +43,6 @@ def list_branches():
 ##
 ## git commands
 ##
-
 @slash_command(description="GitHub management commands")
 async def git(ctx: SlashContext):
     pass
@@ -53,6 +53,7 @@ async def branches(ctx: SlashContext):
     await ctx.send(branches)
 
 @subcommand("git", description="switch active branch")
+@slash_default_member_permission(Permissions.MANAGE_GUILD)
 @slash_option(name="repo", description="eh?", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
 async def checkout(ctx: SlashContext, branch: str):
     branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
@@ -61,6 +62,7 @@ async def checkout(ctx: SlashContext, branch: str):
 
 
 @slash_command(description="Update the bot")
+@slash_default_member_permission(Permissions.MANAGE_GUILD)
 async def pull(ctx: SlashContext):
         await ctx.send("Pulling code from github...")
         try:
