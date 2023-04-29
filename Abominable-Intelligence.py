@@ -6,7 +6,7 @@ from random import randint
 
 import yaml
 from interactions import (Client, OptionType, SlashCommandChoice, SlashContext,
-                          slash_command, slash_option, subcommand)
+                          slash_command, slash_option, subcommand, slash_int_option)
 
 # set os path to bot location for git related commands
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -83,20 +83,9 @@ async def pull(ctx: SlashContext):
 ##
 
 # rolls a dice
-@slash_command(description="funny dice")
-@slash_option(
-    name="dice",
-    description="Dice",
-    required=True,
-    opt_type=OptionType.INTEGER
-)
-@slash_option(
-    name="sides",
-    description="Sides",
-    required=True,
-    opt_type=OptionType.INTEGER
-)
-async def dice(ctx: SlashContext, dice:int, sides:int):
+@slash_command(description="1d20 by default")
+async def dice(ctx: SlashContext, dice:slash_int_option("Dice")=1, sides:slash_int_option("Sides")=20):
+    await ctx.channel.trigger_typing()
     await ctx.send(f"{dice}d{sides}: {', '.join([str(randint(1,sides)) for _ in range(dice)])}")
 
 
