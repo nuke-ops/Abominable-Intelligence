@@ -91,13 +91,13 @@ async def pull(ctx: SlashContext):
         pull = subprocess.check_output(['git', 'pull']).decode("ascii")
         await ctx.send(pull)
 
-        # if "Already up to date" not in pull:
-        await ctx.send("Restarting the bot...")
-        try:
-            os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
-        except Exception:
-            await ctx.send("Restart failed")
-            traceback.print_exc()
+        if "Already up to date" not in pull:
+            await ctx.send("Restarting the bot...")
+            try:
+                os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+            except Exception:
+                await ctx.send("Restart failed")
+                traceback.print_exc()
 
     except Exception:
         await ctx.send("Pull failed")
@@ -114,13 +114,21 @@ async def dice(ctx: SlashContext, dice:slash_int_option("Dice")=1, sides:slash_i
     await ctx.send(f"{dice}d{sides}: {', '.join([str(randint(1,sides)) for _ in range(dice)])}")
 
 
+@slash_command(description="restart the bot")
+@administration_only
+async def restart(ctx = SlashContext):
+    os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+
 @listen()
 async def on_ready():
-    print("Bot started, I think")
-    logger.log(INFO, 'Abominable intelligence has started!')
-    if sys.argv[2] == "Restart succeeded":
-        channel = bot.get_channel(sys.argv[3])
-        await channel.send("Restart succeeded")
+    try:
+        print("Bot started, I think")
+        logger.log(INFO, 'Abominable intelligence has started!')
+        if sys.argv[1] == "Restart succeeded":
+            channel = bot.get_channel(sys.argv[2])
+            await channel.send("Restart succeeded")
+    except Exception:
+        traceback.print_exc()
 
 
 bot.start()
