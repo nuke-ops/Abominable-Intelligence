@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import subprocess
@@ -5,13 +6,14 @@ import sys
 from random import randint
 
 import yaml
-from interactions import (Client, OptionType, SlashCommandChoice, SlashContext,
-                          slash_command, slash_option, subcommand, slash_int_option, slash_default_member_permission, Permissions)
+from interactions import (Client, OptionType, SlashCommandChoice,
+                          SlashContext, slash_command, slash_int_option,
+                          slash_option, subcommand)
 
 # set os path to bot location for git related commands
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-## logs for journal
+# logs for journal
 DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -29,8 +31,10 @@ bot = Client(
     token=bot_token,
     default_scope=guild_id,
     sync_interactions=True,
-    delete_unused_application_cmds=True
+    # delete_unused_application_cmds=True
 )
+
+role_id_administration = 668245500612444205
 
 ##
 ## functions
@@ -42,44 +46,60 @@ def list_branches():
     return [x.replace("origin/", "").replace("->", "").strip() for x in branches().split("\n") if x and "origin/HEAD" not in x]
 
 ##
+## custom decorators
+##
+
+def administration_only(func):
+    @functools.wraps(func)
+    async def wrapper(ctx: SlashContext, *args, **kwargs):
+        if role_id_administration in [role.id for role in ctx.author.roles]:
+            await func(ctx, *args, **kwargs)
+        else:
+            await ctx.send("You don't have access to that command", hidden=True)
+    return wrapper
+
+
+##
 ## git commands
 ##
-@slash_command(description="GitHub management commands")
+@slash_command(description="Local git management commands")
 async def git(ctx: SlashContext):
     pass
 
 @subcommand("git", description="check remote branches")
+@administration_only
 async def branches(ctx: SlashContext):
     branches = subprocess.check_output(['git', 'branch', '-r']).decode()
     await ctx.send(branches)
 
 @subcommand("git", description="switch active branch")
-@slash_default_member_permission(Permissions.MANAGE_GUILD)
-@slash_option(name="repo", description="eh?", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
+@slash_option(name="repo", description="", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
 async def checkout(ctx: SlashContext, branch: str):
-    branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
-    branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
-    await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
-
+    if ctx.member.has_role(role_id_administration):
+        branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
+        branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
+        await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
+    else:
+        await ctx.send("You don't have access to that command")
 
 @subcommand("git", description="Update the bot")
-@slash_default_member_permission(Permissions.MANAGE_GUILD)
-async def pull(ctx: SlashContext):
-        await ctx.send("Pulling code from github...")
-        try:
-                pull = subprocess.check_output(['git', 'pull']).decode("ascii")
-                await ctx.send(pull)
+@administration_only
+async def pull(ctx: SlashContext): 
+    await ctx.send("Pulling code from github...")
+    try:
+        pull = subprocess.check_output(['git', 'pull']).decode("ascii")
+        await ctx.send(pull)
 
-                if "Already up to date" not in pull:
-                    await ctx.send("Restarting the bot...")
-                    try:
-                            os.execv(sys.executable, ['python'] + sys.argv)
-                            await ctx.send("Restart succeeded(?)") # todo: pass it as sys.argv and ctx.send it after the restart
-                    except Exception:
-                            await ctx.send("Restart failed")
+        if "Already up to date" not in pull:
+            await ctx.send("Restarting the bot...")
+            try:
+                os.execv(sys.executable, ['python'] + sys.argv)
+                await ctx.send("Restart succeeded(?)") # todo: pass it as sys.argv and ctx.send it after the restart
+            except Exception:
+                await ctx.send("Restart failed")
 
-        except Exception:
-            await ctx.send("Pull failed")
+    except Exception:
+        await ctx.send("Pull failed")
 
 ##
 ## fun commands or something idk
