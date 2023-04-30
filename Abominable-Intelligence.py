@@ -28,7 +28,8 @@ with open("config.yaml") as conf:
 bot = Client(
     token=bot_token,
     default_scope=guild_id,
-    sync_interactions=True
+    sync_interactions=True,
+    delete_unused_application_cmds=True
 )
 
 ##
@@ -69,13 +70,13 @@ async def pull(ctx: SlashContext):
                 pull = subprocess.check_output(['git', 'pull']).decode("ascii")
                 await ctx.send(pull)
 
-                # if updated successfully, restart the bot
-                await ctx.send("Restarting the bot...")
-                try:
-                        os.execv(sys.executable, ['python'] + sys.argv)
-                        await ctx.send("Restart succeeded(?)") # todo: pass it as sys.argv and ctx.send after the restart
-                except Exception:
-                        await ctx.send("Restart failed")
+                if "Already up to date" not in pull:
+                    await ctx.send("Restarting the bot...")
+                    try:
+                            os.execv(sys.executable, ['python'] + sys.argv)
+                            await ctx.send("Restart succeeded(?)") # todo: pass it as sys.argv and ctx.send it after the restart
+                    except Exception:
+                            await ctx.send("Restart failed")
 
         except Exception:
             await ctx.send("Pull failed")
