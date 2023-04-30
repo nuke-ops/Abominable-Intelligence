@@ -90,15 +90,8 @@ async def pull(ctx: SlashContext):
     try:
         pull = subprocess.check_output(['git', 'pull']).decode("ascii")
         await ctx.send(pull)
-
         if "Already up to date" not in pull:
-            await ctx.send("Restarting the bot...")
-            try:
-                os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
-            except Exception:
-                await ctx.send("Restart failed")
-                traceback.print_exc()
-
+            await restart(ctx)
     except Exception:
         await ctx.send("Pull failed")
         traceback.print_exc()
@@ -107,17 +100,21 @@ async def pull(ctx: SlashContext):
 ## fun commands or something idk
 ##
 
-# rolls a dice
 @slash_command(description="1d20 by default")
 async def dice(ctx: SlashContext, dice:slash_int_option("Dice")=1, sides:slash_int_option("Sides")=20):
     await ctx.channel.trigger_typing()
     await ctx.send(f"{dice}d{sides}: {', '.join([str(randint(1,sides)) for _ in range(dice)])}")
 
 
-@slash_command(description="restart the bot")
+@slash_command(description="Restart the bot")
 @administration_only
 async def restart(ctx = SlashContext):
-    os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+    await ctx.send("Restarting the bot...")
+    try:
+        os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+    except Exception:
+        await ctx.send("Restart failed")
+        traceback.print_exc()
 
 @listen()
 async def on_ready():
