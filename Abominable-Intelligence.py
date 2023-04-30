@@ -4,9 +4,10 @@ import os
 import subprocess
 import sys
 from random import randint
+import traceback
 
 import yaml
-from interactions import (Client, OptionType, SlashCommandChoice,
+from interactions import (listen, Client, OptionType, SlashCommandChoice,
                           SlashContext, slash_command, slash_int_option,
                           slash_option, subcommand)
 
@@ -90,16 +91,17 @@ async def pull(ctx: SlashContext):
         pull = subprocess.check_output(['git', 'pull']).decode("ascii")
         await ctx.send(pull)
 
-        if "Already up to date" not in pull:
-            await ctx.send("Restarting the bot...")
-            try:
-                os.execv(sys.executable, ['python'] + sys.argv)
-                await ctx.send("Restart succeeded(?)") # todo: pass it as sys.argv and ctx.send it after the restart
-            except Exception:
-                await ctx.send("Restart failed")
+        # if "Already up to date" not in pull:
+        await ctx.send("Restarting the bot...")
+        try:
+            os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+        except Exception:
+            await ctx.send("Restart failed")
+            traceback.print_exc()
 
     except Exception:
         await ctx.send("Pull failed")
+        traceback.print_exc()
 
 ##
 ## fun commands or something idk
@@ -112,10 +114,13 @@ async def dice(ctx: SlashContext, dice:slash_int_option("Dice")=1, sides:slash_i
     await ctx.send(f"{dice}d{sides}: {', '.join([str(randint(1,sides)) for _ in range(dice)])}")
 
 
-@bot.event
+@listen()
 async def on_ready():
     print("Bot started, I think")
     logger.log(INFO, 'Abominable intelligence has started!')
+    if sys.argv[2] == "Restart succeeded":
+        channel = bot.get_channel(sys.argv[3])
+        await channel.send("Restart succeeded")
 
 
 bot.start()
