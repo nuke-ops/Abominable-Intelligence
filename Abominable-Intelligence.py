@@ -62,7 +62,7 @@ async def checkout(ctx: SlashContext, branch: str):
     await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
 
 
-@slash_command(description="Update the bot")
+@subcommand("git", description="Update the bot")
 @slash_default_member_permission(Permissions.MANAGE_GUILD)
 async def pull(ctx: SlashContext):
         await ctx.send("Pulling code from github...")
