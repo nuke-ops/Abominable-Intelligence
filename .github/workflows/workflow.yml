@@ -14,7 +14,7 @@ jobs:
       id: check-start-stop
       run: |
         chmod +x .github/workflows/scripts/pre-commit.sh
-        .git/hooks/pre-commit.sh
+        .github/workflows/scripts/pre-commit.sh
       shell: bash
     - name: Check status
       run: echo "Status:${{ steps.check-start-stop.outputs.status }}"
