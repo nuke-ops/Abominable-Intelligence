@@ -1,0 +1,20 @@
+name: Check Python script start and stop
+
+on: push
+
+jobs:
+  check-start-stop:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Check start and stop
+      id: check-start-stop
+      run: |
+        chmod +x .git/hooks/pre-commit.sh
+        .git/hooks/pre-commit.sh
+      shell: bash
+    - name: Check status
+      run: echo "Status: ${{ steps.check-start-stop.outputs.status }}"
