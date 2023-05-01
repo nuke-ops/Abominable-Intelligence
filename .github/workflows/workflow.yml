@@ -13,7 +13,7 @@ jobs:
     - name: Check start and stop
       id: check-start-stop
       run: |
-        chmod +x .git/hooks/pre-commit.sh
+        chmod +x .github/workflow/scripts/pre-commit.sh
         .git/hooks/pre-commit.sh
       shell: bash
     - name: Check status
