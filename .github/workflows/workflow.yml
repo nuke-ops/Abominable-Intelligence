@@ -2,6 +2,10 @@ name: Check Python script start and stop
 
 on: push
 
+env:
+  DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+  DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+
 jobs:
   check-start-stop:
     runs-on: ubuntu-latest
