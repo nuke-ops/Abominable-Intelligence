@@ -21,7 +21,7 @@ jobs:
         run: |
           chmod +x .github/workflows/scripts/pre-commit.sh
           .github/workflows/scripts/pre-commit.sh
-          echo "::set-env name=STATUS::${STATUS}"
+          echo "STATUS=${STATUS}" >> $GITHUB_ENV
         shell: bash
       - name: Check status
         run: echo "Status:${{ env.STATUS }}"
