@@ -11,8 +11,18 @@ from interactions import (listen, Client, OptionType, SlashCommandChoice,
                           SlashContext, slash_command, slash_int_option,
                           slash_option, subcommand)
 
-# set os path to bot location for git related commands
-os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, "config.yaml")
+
+# load bot token and guild id
+with open(config_path) as conf:
+    f = yaml.load(conf, Loader=yaml.FullLoader)
+    bot_token = f["bot_token"]
+    guild_id = f["guild_id"]
+    
+# set bot's work directory
+os.chdir(script_dir)
+
 
 # logs for journal
 DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
@@ -21,21 +31,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# load bot token and guild id
-with open("config.yaml") as conf:
-        f = yaml.load(conf, Loader=yaml.FullLoader)
-        bot_token = f["bot_token"]
-        guild_id = f["guild_id"]
 
 # define bot and its settings
 bot = Client(
     token=bot_token,
     default_scope=guild_id,
-    sync_interactions=True,
     # delete_unused_application_cmds=True
 )
 
+
 role_id_administration = 668245500612444205
+
 
 ##
 ## functions
