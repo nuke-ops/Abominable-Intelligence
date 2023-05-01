@@ -117,7 +117,7 @@ async def dice(ctx: SlashContext, dice:slash_int_option("Dice")=1, sides:slash_i
 async def restart(ctx = SlashContext):
     await ctx.send("Restarting the bot...")
     try:
-        os.execv(sys.executable, ['python'] + sys.argv + ["Restart succeeded", str(ctx.channel_id)])
+        os.execv(sys.executable, ['python'] + sys.argv + ["Restart triggered", str(ctx.channel_id)])
     except Exception:
         await ctx.send("Restart failed")
         traceback.print_exc()
@@ -127,7 +127,7 @@ async def on_ready():
     try:
         print("Bot started, I think")
         logger.log(INFO, 'Abominable intelligence has started!')
-        if sys.argv[1] == "Restart succeeded":
+        if len(sys.argv) > 2 and sys.argv[1] == "Restart triggered":
             channel = bot.get_channel(sys.argv[2])
             await channel.send("Restart succeeded")
     except Exception:
