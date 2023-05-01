@@ -1,7 +1,7 @@
 import functools
 from interactions import SlashContext
 
-role_id_administration = 668245500612444205
+from global_variables import role_id_administration
 
 def administration_only(func):
     @functools.wraps(func)

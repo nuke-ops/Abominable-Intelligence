@@ -4,18 +4,16 @@ import sys
 import traceback
 import yaml
 
-from interactions import (Client, listen, slash_command, SlashContext)
+from interactions import (Client, slash_command, SlashContext)
 
 from abominable_modules import *
 from decorators import administration_only
-
+from global_variables import script_dir, config_path
 
 # set bot's work directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # load bot token and guild id
-config_path = os.path.join(script_dir, "config.yaml")
 with open(config_path) as conf:
     f = yaml.load(conf, Loader=yaml.FullLoader)
     bot_token = f["bot_token"]
@@ -34,7 +32,7 @@ logger = logging.getLogger(__name__)
 bot = Client(
     token=os.environ.get('DISCORD_BOT_TOKEN', bot_token),
     default_scope=os.environ.get('DISCORD_GUILD_ID)', guild_id),
-    delete_unused_application_cmds=True
+    # delete_unused_application_cmds=True
 )
 
 
@@ -47,17 +45,7 @@ async def restart(ctx = SlashContext):
     except Exception:
         await ctx.send("Restart failed")
         traceback.print_exc()
-
-@listen()
-async def on_ready():
-    try:
-        print("Bot started, I think")
-        logger.log(INFO, 'Abominable intelligence has started!')
-        if len(sys.argv) > 2 and sys.argv[1] == "Restart triggered":
-            channel = bot.get_channel(sys.argv[2])
-            await channel.send("Restart succeeded")
-    except Exception:
-        traceback.print_exc()
+       
 
 if __name__ == '__main__':
     bot.start()
