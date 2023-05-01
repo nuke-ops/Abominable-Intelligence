@@ -1,0 +1,13 @@
+import functools
+from interactions import SlashContext
+
+role_id_administration = 668245500612444205
+
+def administration_only(func):
+    @functools.wraps(func)
+    async def wrapper(ctx: SlashContext, *args, **kwargs):
+        if role_id_administration in [role.id for role in ctx.author.roles]:
+            await func(ctx, *args, **kwargs)
+        else:
+            await ctx.send("You don't have access to that command", hidden=True)
+    return wrapper
