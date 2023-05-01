@@ -6,7 +6,6 @@ import sys
 from random import randint
 import traceback
 
-import yaml
 from interactions import (listen, Client, OptionType, SlashCommandChoice,
                           SlashContext, slash_command, slash_int_option,
                           slash_option, subcommand)
@@ -14,11 +13,6 @@ from interactions import (listen, Client, OptionType, SlashCommandChoice,
 script_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(script_dir, "config.yaml")
 
-# load bot token and guild id
-with open(config_path) as conf:
-    f = yaml.load(conf, Loader=yaml.FullLoader)
-    bot_token = f["bot_token"]
-    guild_id = f["guild_id"]
     
 # set bot's work directory
 os.chdir(script_dir)
@@ -34,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 # define bot and its settings
 bot = Client(
-    token=bot_token,
-    default_scope=guild_id,
+    token=os.environ.get('DISCORD_BOT_TOKEN'),
+    default_scope=os.environ.get('DISCORD_GUILD_ID)'),
     # delete_unused_application_cmds=True
 )
 
