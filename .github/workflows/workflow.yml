@@ -6,15 +6,18 @@ jobs:
   check-start-stop:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-    - name: Check start and stop
-      id: check-start-stop
-      run: |
-        chmod +x .github/workflows/scripts/pre-commit.sh
-        .github/workflows/scripts/pre-commit.sh
-      shell: bash
-    - name: Check status
-      run: echo "Status:${{ steps.check-start-stop.outputs.status }}"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check start and stop
+        id: check-start-stop
+        env:
+          STATUS: ""
+        run: |
+          chmod +x .github/workflows/scripts/pre-commit.sh
+          .github/workflows/scripts/pre-commit.sh
+          echo "::set-env name=STATUS::${STATUS}"
+        shell: bash
+      - name: Check status
+        run: echo "Status:${{ env.STATUS }}"
