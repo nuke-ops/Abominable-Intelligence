@@ -6,9 +6,9 @@ import yaml
 
 from interactions import (Client, slash_command, SlashContext)
 
-from abominable_modules import *
 from decorators import administration_only
 from global_variables import script_dir, config_path
+
 
 # set bot's work directory
 os.chdir(script_dir)
@@ -48,4 +48,7 @@ async def restart(ctx = SlashContext):
        
 
 if __name__ == '__main__':
+    bot.load_extension("abominable_modules.git")
+    bot.load_extension("abominable_modules.tabletop")
+
     bot.start()
