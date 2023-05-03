@@ -1,10 +1,5 @@
 #!/bin/bash
 
-echo "ls 1: "
-ls
-echo "ls 2: "
-ls *
-
 # Start the bot in the background
 python abominable_intelligence/abominable_intelligence.py &
 
