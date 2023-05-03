@@ -38,7 +38,7 @@ bot = Client(
 
 @slash_command(description="Restart the bot")
 @administration_only
-async def restart(ctx = SlashContext):
+async def restart(ctx: SlashContext):
     await ctx.send("Restarting the bot...")
     try:
         os.execv(sys.executable, ['python'] + sys.argv + ["Restart triggered", str(ctx.channel_id)])
@@ -48,7 +48,8 @@ async def restart(ctx = SlashContext):
        
 
 if __name__ == '__main__':
-    bot.load_extension("abominable_modules.git")
-    bot.load_extension("abominable_modules.tabletop")
+    bot.load_extension("modules.listeners")
+    bot.load_extension("modules.git")
+    bot.load_extension("modules.tabletop")
 
     bot.start()

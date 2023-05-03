@@ -7,8 +7,8 @@ import subprocess
 import traceback
 from interactions import Extension, OptionType, SlashCommandChoice, SlashContext, slash_command, slash_option, subcommand
 
-from abominable_intelligence import restart
-from decorators import administration_only
+from abominable_intelligence import restart, administration_only
+# from decorators import administration_only
 from global_variables import role_id_administration
 
 
@@ -24,7 +24,7 @@ class Git(Extension):
     async def git(self, ctx: SlashContext):
         pass
 
-    @subcommand("git", description="check remote branches")
+    @subcommand("git", description="list local branches")
     @administration_only
     async def branches(self, ctx: SlashContext):
         branches = subprocess.check_output(['git', 'branch', '-r']).decode()
@@ -33,12 +33,9 @@ class Git(Extension):
     @subcommand("git", description="switch active branch")
     @slash_option(name="repo", description="", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
     async def checkout(self, ctx: SlashContext, branch: str):
-        if ctx.member.has_role(role_id_administration):
-            branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
-            branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
-            await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
-        else:
-            await ctx.send("You don't have access to that command")
+        branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
+        branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
+        await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
 
     @subcommand("git", description="Update the bot")
     @administration_only
