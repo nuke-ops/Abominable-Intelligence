@@ -9,9 +9,9 @@ sleep 5
 # Check if the bot is still running
 if pgrep -f "python abominable_intelligence/abominable_intelligence.py" >/dev/null
 then
-    echo "::set-output name=status::success"
+    echo "{status}={success}" >> $GITHUB_STATE
 else
-    echo "::set-output name=status::failure"
+    echo "{status}={failure}" >> $GITHUB_STATE
     echo "Error: Bot failed to start"
     exit 1
 fi
@@ -25,11 +25,11 @@ pkill -f "python abominable_intelligence/abominable_intelligence.py"
 # Check if the bot has stopped
 if pgrep -f "python abominable_intelligence/abominable_intelligence.py" >/dev/null
 then
-    echo "::set-output name=status::failure"
+    echo "{status}={failure}" >> $GITHUB_STATE
     echo "Error: Bot failed to stop"
     exit 1
 else
-    echo "::set-output name=status::success"
+    echo "{status}={success}" >> $GITHUB_STATE
 fi
 
 exit 0
