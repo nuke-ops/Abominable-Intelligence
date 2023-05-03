@@ -1,15 +1,9 @@
-import os
-import sys
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_dir)
-
 import subprocess
 import traceback
-from interactions import Extension, OptionType, SlashCommandChoice, SlashContext, slash_command, slash_option, subcommand
+from interactions import (Extension, OptionType, SlashCommandChoice, SlashContext,
+                          slash_command, slash_option, subcommand)
 
-from abominable_intelligence import restart, administration_only
-# from decorators import administration_only
-from global_variables import role_id_administration
+from decorators import administration_only
 
 
 

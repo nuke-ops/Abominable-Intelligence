@@ -1,12 +1,9 @@
 import logging
 import os
-import sys
-import traceback
 import yaml
 
-from interactions import (Client, slash_command, SlashContext)
+from interactions import Client
 
-from decorators import administration_only
 from global_variables import script_dir, config_path
 
 
@@ -36,19 +33,10 @@ bot = Client(
 )
 
 
-@slash_command(description="Restart the bot")
-@administration_only
-async def restart(ctx: SlashContext):
-    await ctx.send("Restarting the bot...")
-    try:
-        os.execv(sys.executable, ['python'] + sys.argv + ["Restart triggered", str(ctx.channel_id)])
-    except Exception:
-        await ctx.send("Restart failed")
-        traceback.print_exc()
-       
-
 if __name__ == '__main__':
     bot.load_extension("modules.listeners")
+    bot.load_extension("modules.core")
+    
     bot.load_extension("modules.git")
     bot.load_extension("modules.tabletop")
 
