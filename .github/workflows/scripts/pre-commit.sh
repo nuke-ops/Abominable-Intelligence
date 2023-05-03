@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Start the bot in the background
-python Abominable-Intelligence/abominable_intelligence.py &
+python abominable-Intelligence/abominable_intelligence.py &
 
 # Wait for a few seconds for the bot to start up
 sleep 5
 
 # Check if the bot is still running
-if pgrep -f "python Abominable-Intelligence/abominable_intelligence.py" >/dev/null
+if pgrep -f "python abominable-Intelligence/abominable_intelligence.py" >/dev/null
 then
     echo "::set-output name=status::success"
 else
@@ -20,10 +20,10 @@ fi
 sleep 5
 
 # Stop the bot
-pkill -f "python Abominable-Intelligence/abominable_intelligence.py"
+pkill -f "python abominable-Intelligence/abominable_intelligence.py"
 
 # Check if the bot has stopped
-if pgrep -f "python Abominable-Intelligence/abominable_intelligence.py" >/dev/null
+if pgrep -f "python abominable-Intelligence/abominable_intelligence.py" >/dev/null
 then
     echo "::set-output name=status::failure"
     echo "Error: Bot failed to stop"
