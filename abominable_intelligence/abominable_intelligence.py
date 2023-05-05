@@ -6,6 +6,12 @@ from interactions import Client
 
 from global_variables import script_dir, config_path
 
+# logs for journal
+DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 # set bot's work directory
 os.chdir(script_dir)
@@ -19,15 +25,6 @@ try:
 except FileNotFoundError:
     bot_token=os.environ.get('DISCORD_BOT_TOKEN')
     guild_id=os.environ.get('DISCORD_GUILD_ID)')
-
-
-# logs for journal
-DEBUG, INFO, WARN, ERROR, SUCCESS = range(1, 6)
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
 
 # define bot and its settings
 bot = Client(

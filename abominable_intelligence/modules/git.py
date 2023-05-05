@@ -34,12 +34,12 @@ class Git(Extension):
     @subcommand("git", description="Update the bot")
     @administration_only
     async def pull(self, ctx: SlashContext): 
-        await ctx.send("Pulling code from github...")
+        await ctx.send("Looking for changes...")
         try:
             pull = subprocess.check_output(['git', 'pull']).decode("ascii")
             await ctx.send(pull)
             if "Already up to date" not in pull:
-                await restart(ctx)
+                await restart()
         except Exception:
             await ctx.send("Pull failed")
             traceback.print_exc()

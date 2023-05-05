@@ -8,5 +8,5 @@ def administration_only(func):
         if role_id_administration in [role.id for role in ctx.author.roles]:
             await func(self, ctx, *args, **kwargs)
         else:
-            await ctx.send("You don't have access to that command")
+            await ctx.respond("You don't have access to that command", ephemeral=True)
     return wrapper
