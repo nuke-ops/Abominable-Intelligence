@@ -3,8 +3,8 @@ import traceback
 from interactions import (Extension, OptionType, SlashCommandChoice, SlashContext,
                           slash_command, slash_option, subcommand)
 
+from modules.core import Core
 from decorators import administration_only
-
 
 
 def list_branches():
@@ -38,8 +38,8 @@ class Git(Extension):
         try:
             pull = subprocess.check_output(['git', 'pull']).decode("ascii")
             await ctx.send(pull)
-            if "Already up to date" not in pull:
-                await restart()
+            # if "Already up to date" not in pull:
+            await Core.restart(ctx)
         except Exception:
             await ctx.send("Pull failed")
             traceback.print_exc()

@@ -12,7 +12,7 @@ class Core(Extension):
     async def restart(self, ctx: SlashContext):
         await ctx.send("Restarting the bot...")
         try:
-            os.execv(sys.executable, ['python'] + sys.argv + ["Restart triggered", str(ctx.channel_id)])
+            os.execv(sys.executable, ['python'] + sys.argv + ["restarted", str(ctx.channel_id)])
         except Exception:
             await ctx.send("Restart failed")
             traceback.print_exc()
