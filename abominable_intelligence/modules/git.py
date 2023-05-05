@@ -38,8 +38,8 @@ class Git(Extension):
         try:
             pull = subprocess.check_output(['git', 'pull']).decode("ascii")
             await ctx.send(pull)
-            # if "Already up to date" not in pull:
-            await Core.restart(ctx)
+            if "Already up to date" not in pull:
+                await Core.restart(ctx)
         except Exception:
             await ctx.send("Pull failed")
             traceback.print_exc()
