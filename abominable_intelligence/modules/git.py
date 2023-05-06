@@ -12,8 +12,7 @@ def list_branches():
     # remove head, remove the "origin/"" thingies and transform to list. example: ['main', 'v1']
     return [x.replace("origin/", "").replace("->", "").strip() for x in branches().split("\n") if x and "origin/HEAD" not in x]
 
-class Git(Extension):
-    
+class Git(Extension):        
     @slash_command(description="Local git management commands")
     async def git(self, ctx: SlashContext):
         pass
@@ -21,15 +20,16 @@ class Git(Extension):
     @subcommand("git", description="list local branches")
     @administration_only
     async def branches(self, ctx: SlashContext):
+        current_branch = subprocess.check_output(["git", "branch", "--show-current"]).decode()
         branches = subprocess.check_output(['git', 'branch', '-r']).decode()
-        await ctx.send(branches)
+        await ctx.send(f"{branches}\nCurrent branch:{current_branch}")
 
     @subcommand("git", description="switch active branch")
     @slash_option(name="branch", description="", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
     async def checkout(self, ctx: SlashContext, branch: str):
         branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
-        branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
-        await ctx.send(f"{branch_set}\nCurrent branch: {branch_current}")
+        current_branch = subprocess.check_output(["git", "branch", "--show-current"]).decode()
+        await ctx.send(f"{branch_set}\nCurrent branch: {current_branch}")
 
     @subcommand("git", description="Update the bot")
     @administration_only
