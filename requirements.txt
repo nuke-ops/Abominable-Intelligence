@@ -1,0 +1,2 @@
+discord_py_interactions==5.1.0
+attrs==21.4.0

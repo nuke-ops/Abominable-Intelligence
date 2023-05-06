@@ -1,0 +1,27 @@
+name: Check Python script start and stop
+
+on: push
+
+env:
+  DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+  DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+
+jobs:
+  check-start-stop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check start and stop
+        id: check-start-stop
+        env:
+          STATUS: ""
+        run: |
+          chmod +x .github/workflows/scripts/pre-commit.sh
+          .github/workflows/scripts/pre-commit.sh
+          echo "STATUS=${STATUS}" >> $GITHUB_ENV
+        shell: bash
+      - name: Check status
+        run: echo "Status:${{ env.STATUS }}"
