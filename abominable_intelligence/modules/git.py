@@ -25,7 +25,7 @@ class Git(Extension):
         await ctx.send(branches)
 
     @subcommand("git", description="switch active branch")
-    @slash_option(name="repo", description="", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
+    @slash_option(name="branch", description="", opt_type=OptionType.STRING, required=True, choices = [SlashCommandChoice(name=branch, value=branch) for branch in list_branches()])
     async def checkout(self, ctx: SlashContext, branch: str):
         branch_set = subprocess.check_output(["git", "checkout", branch]).decode()
         branch_current = subprocess.check_output(["git", "branch", "--show-current"]).decode()
