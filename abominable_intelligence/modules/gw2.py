@@ -3,6 +3,7 @@ import json
 from interactions import (
     Extension,
     SlashContext,
+    Embed,
     slash_command,
     slash_str_option,
     subcommand,
@@ -39,12 +40,10 @@ class Gw2(Extension):
 
     @subcommand("gw2", description="Get help for gw2 commands")
     async def help(self, ctx: SlashContext):
-        await ctx.send(
-            """
-                 ``Save API key`` - get the key from https://account.arena.net/applications
-                 ``Verify`` - Requries stored API key with access to Account API
-            """
-        )  # TODO I guess it would be nice to embed it
+        embed = Embed(title="Dice", color="#E0FFFF")
+        embed.add_field(name="Save API key", value="get the key from https://account.arena.net/applications", inline=False)
+        embed.add_field(name="Verify", value="Requries stored API key with access to Account API", inline=False)
+        await ctx.send(embed=embed)
 
     @subcommand(
         "gw2", name="save-api-key", description="Saves your API in the bot's database"
