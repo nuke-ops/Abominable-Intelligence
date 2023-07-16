@@ -40,10 +40,10 @@ class Gw2(Extension):
     @subcommand("gw2", description="Get help for gw2 commands")
     async def help(self, ctx: SlashContext):
         await ctx.send(
-            "\
-                 ``Save API key`` - get the key from https://account.arena.net/applications\n\
-                 ``Verify`` - Requries stored API key with access to Account API\
-            "
+            """
+                 ``Save API key`` - get the key from https://account.arena.net/applications
+                 ``Verify`` - Requries stored API key with access to Account API
+            """
         )  # TODO I guess it would be nice to embed it
 
     @subcommand(
