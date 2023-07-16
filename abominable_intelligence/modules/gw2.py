@@ -39,7 +39,7 @@ class Gw2(Extension):
 
     @subcommand("gw2", description="Get help for gw2 commands")
     async def help(self, ctx: SlashContext):
-        ctx.send(
+        await ctx.send(
             "\
                  ``Save API key`` - get the key from https://account.arena.net/applications\n\
                  ``Verify`` - Requries stored API key with access to Account API\
