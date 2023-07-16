@@ -33,11 +33,9 @@ class Gw2(Extension):
         pass
 
 
-    # https://account.arena.net/applications
+    # TODO add that link somewhere I guess https://account.arena.net/applications
     @subcommand("gw2", description="Saves your API in the bot's database")
-    async def save_api_key(self, ctx: SlashContext, api_key:slash_str_option("API Key")):        
-        # TODO make it idiotproof by allowing it only in DMs
-        # and remomve the user's messange if it was sent on server
+    async def save_api_key(self, ctx: SlashContext, api_key:slash_str_option("API Key")):
         print(fetch("gw2", f"username = '{ctx.author.nickname}'"))
         if not self.gw2api.account_exists(api_key):
             await ctx.send("Invalid API")
