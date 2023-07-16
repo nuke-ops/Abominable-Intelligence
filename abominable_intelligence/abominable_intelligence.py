@@ -40,5 +40,6 @@ if __name__ == '__main__':
     
     bot.load_extension("modules.git")
     bot.load_extension("modules.tabletop")
+    bot.load_extension("modules.gw2")
 
     bot.start()

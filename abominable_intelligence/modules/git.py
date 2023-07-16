@@ -12,7 +12,7 @@ def list_branches():
     # remove head, remove the "origin/"" thingies and transform to list. example: ['main', 'v1']
     return [x.replace("origin/", "").replace("->", "").strip() for x in branches().split("\n") if x and "origin/HEAD" not in x]
 
-class Git(Extension):        
+class Git(Extension):
     @slash_command(description="Local git management commands")
     async def git(self, ctx: SlashContext):
         pass
