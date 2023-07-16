@@ -47,7 +47,7 @@ class Gw2(Extension):
         )  # TODO I guess it would be nice to embed it
 
     @subcommand(
-        "gw2", name="save api key", description="Saves your API in the bot's database"
+        "gw2", name="save-api-key", description="Saves your API in the bot's database"
     )
     async def save_api_key(
         self, ctx: SlashContext, api_key: slash_str_option("API Key")
