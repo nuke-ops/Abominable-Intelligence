@@ -40,7 +40,7 @@ class Gw2(Extension):
 
     @subcommand("gw2", description="Get help for gw2 commands")
     async def help(self, ctx: SlashContext):
-        embed = Embed(title="Dice", color="#E0FFFF")
+        embed = Embed(description="Help", color="#E0FFFF")
         embed.add_field(name="Save API key", value="get the key from https://account.arena.net/applications", inline=False)
         embed.add_field(name="Verify", value="Requries stored API key with access to Account API", inline=False)
         await ctx.send(embed=embed)
