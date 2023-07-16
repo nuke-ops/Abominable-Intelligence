@@ -2,16 +2,22 @@ import mysql.connector
 import yaml
 from global_variables import config_path
 
-
-with open(config_path) as conf:
-    f = yaml.load(conf, Loader = yaml.FullLoader)
-    connection_config = {
-    'host'     : f["host"],
-    'user'     : f["user"],
-    'password' : f["password"],
-    'database' : f["database"]
-    }
-
+try:
+    with open(config_path) as conf:
+        f = yaml.load(conf, Loader = yaml.FullLoader)
+        connection_config = {
+        'host'     : f["host"],
+        'user'     : f["user"],
+        'password' : f["password"],
+        'database' : f["database"]
+        }
+except FileNotFoundError:
+        connection_config = {
+        'host'     : "host",
+        'user'     : "user",
+        'password' : "password",
+        'database' : "database"
+        }
 
 def insert(table, collumns, values):
     with mysql.connector.connect(**connection_config) as connection:
