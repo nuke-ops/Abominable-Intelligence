@@ -27,10 +27,15 @@ def insert(table, collumns, values):
             connection.commit()
 
 
-def fetch(table, condition):
+def select(table, condition):
     with mysql.connector.connect(**connection_config) as connection:
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {table} WHERE {condition}")
             rows = cursor.fetchall()
-
         return rows
+
+
+def update(table, data, condition):
+    with mysql.connector.connect(**connection_config) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(f"UPDATE {table} SET {data} WHERE {condition}")

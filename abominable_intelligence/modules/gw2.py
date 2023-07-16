@@ -7,7 +7,7 @@ from interactions import (
     slash_str_option,
     subcommand,
 )
-from modules.MySQL import insert, fetch
+from modules.MySQL import insert, select, update
 
 
 class Gw2api:
@@ -37,17 +37,28 @@ class Gw2(Extension):
     async def gw2(self, ctx: SlashContext):
         pass
 
-    # TODO add that link somewhere I guess https://account.arena.net/applications
-    @subcommand("gw2", description="Saves your API in the bot's database")
+    @subcommand("gw2", description="Get help for gw2 commands")
+    async def help(self, ctx: SlashContext):
+        ctx.send(
+            "\
+                 ``Save API key`` - get the key from https://account.arena.net/applications\n\
+                 ``Verify`` - Requries stored API key with access to Account API\
+            "
+        )  # TODO I guess it would be nice to embed it
+
+    @subcommand(
+        "gw2", name="Save API key", description="Saves your API in the bot's database"
+    )
     async def save_api_key(
         self, ctx: SlashContext, api_key: slash_str_option("API Key")
     ):
-        print(fetch("gw2", f"username = '{ctx.author.nickname}'"))
+        print(select("gw2", f"username = '{ctx.author.nickname}'"))
         if not self.gw2api.account_exists(api_key):
             await ctx.send("Invalid API")
             return
-        if fetch("gw2", f"username = '{ctx.author.nickname}'"):
-            await ctx.send("User already in database")
+        if select("gw2", f"username = '{ctx.author.nickname}'"):
+            await ctx.send("User already in database, overwriting...")
+            update("gw2", f"api_key = {api_key}", f"username = {ctx.author.nickname}")
             return
 
         insert("gw2", "username, api_key", f"'{ctx.author.nickname}', '{api_key}'")
@@ -55,7 +66,7 @@ class Gw2(Extension):
 
     @subcommand("gw2", description="Asigns you ranks based on your guilds")
     async def verify(self, ctx: SlashContext):
-        api_key = str(fetch("gw2", f"username = '{ctx.author.nickname}'")[0])
+        api_key = str(select("gw2", f"username = '{ctx.author.nickname}'")[0])
         for x in ["(", ")", "'"]:  # I'll think later about clearing it up, right
             api_key = api_key.replace(x, "")
         api_key = api_key.split(",")[-1]
