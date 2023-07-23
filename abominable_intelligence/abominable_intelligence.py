@@ -23,8 +23,8 @@ try:
         bot_token = f["bot_token"]
         guild_id = f["guild_id"]
 except FileNotFoundError:
-    bot_token=os.environ.get('DISCORD_BOT_TOKEN')
-    guild_id=os.environ.get('DISCORD_GUILD_ID)')
+    bot_token = os.environ.get("DISCORD_BOT_TOKEN")
+    guild_id = os.environ.get("DISCORD_GUILD_ID)")
 
 # define bot and its settings
 bot = Client(
@@ -34,11 +34,12 @@ bot = Client(
 )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bot.load_extension("modules.listeners")
     bot.load_extension("modules.core")
-    
+
     bot.load_extension("modules.git")
     bot.load_extension("modules.tabletop")
+    bot.load_extension("modules.gw2")
 
     bot.start()
