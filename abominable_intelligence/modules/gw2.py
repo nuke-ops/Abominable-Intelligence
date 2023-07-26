@@ -8,7 +8,7 @@ from interactions import (
     slash_str_option,
     subcommand,
 )
-from modules.MySQL import insert, select, update
+from modules.MySQL import Sql
 
 
 class Gw2api:
@@ -34,6 +34,8 @@ class Gw2(Extension):
         self.guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
         self.guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
 
+        self.sql = Sql().gw2()
+
     @slash_command(description="Guild Wars 2 commands")
     async def gw2(self, ctx: SlashContext):
         pass
@@ -41,8 +43,16 @@ class Gw2(Extension):
     @subcommand("gw2", description="Get help for gw2 commands")
     async def help(self, ctx: SlashContext):
         embed = Embed(description="Help", color="#E0FFFF")
-        embed.add_field(name="Save API key", value="get the key from https://account.arena.net/applications", inline=False)
-        embed.add_field(name="Verify", value="Requries stored API key with access to Account API", inline=False)
+        embed.add_field(
+            name="Save API key",
+            value="get the key from https://account.arena.net/applications",
+            inline=False,
+        )
+        embed.add_field(
+            name="Verify",
+            value="Requries stored API key with access to Account API",
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
     @subcommand(
@@ -51,24 +61,27 @@ class Gw2(Extension):
     async def save_api_key(
         self, ctx: SlashContext, api_key: slash_str_option("API Key")
     ):
-        print(select("gw2", f"username = '{ctx.author.nickname}'"))
         if not self.gw2api.account_exists(api_key):
             await ctx.send("Invalid API")
             return
-        if select("gw2", f"username = '{ctx.author.nickname}'"):
-            await ctx.send("User already in database, overwriting...")
-            update("gw2", f"api_key = {api_key}", f"username = {ctx.author.nickname}")
-            return
-
-        insert("gw2", "username, api_key", f"'{ctx.author.nickname}', '{api_key}'")
-        await ctx.send("API key saved")
+        if self.sql.select(ctx.author.nickname):
+            try:
+                await ctx.send("User already in database, overwriting...")
+                self.sql.update(api_key, ctx.author.nickname)
+                await ctx.send("API saved successfully")
+                return
+            except Exception as e:
+                await ctx.send("Database Error, most likely")
+                return
+        try:
+            self.sql.insert(ctx.author.nickname, api_key)
+            await ctx.send("API saved successfully")
+        except:
+            await ctx.send("Database Error, most likely")
 
     @subcommand("gw2", description="Asigns you ranks based on your guilds")
     async def verify(self, ctx: SlashContext):
-        api_key = str(select("gw2", f"username = '{ctx.author.nickname}'")[0])
-        for x in ["(", ")", "'"]:  # I'll think later about clearing it up, right
-            api_key = api_key.replace(x, "")
-        api_key = api_key.split(",")[-1]
+        api_key = str(self.sql.select(ctx.author.nickname))
         if api_key:
             output = ""
             if self.guild_nukeops in self.gw2api.guilds(api_key):

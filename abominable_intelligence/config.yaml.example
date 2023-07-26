@@ -2,6 +2,8 @@
   'bot_token' : bot_token,
   'guild_id' : guild_id,
 
+  'encrypt_key' : encrypt,
+
   'host' : host,
   'user' : user,
   'password' : password,

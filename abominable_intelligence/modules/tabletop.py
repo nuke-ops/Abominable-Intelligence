@@ -1,5 +1,4 @@
 from random import randint
-
 from interactions import (
     Extension,
     SlashContext,
@@ -9,6 +8,10 @@ from interactions import (
     Color,
 )
 from interactions.ext.paginators import Paginator
+from modules.core import Core
+
+error = Core.error
+##TODO encrypt and error handling
 
 
 class Tabletop(Extension):
@@ -21,22 +24,12 @@ class Tabletop(Extension):
     ):
         # some pseudo error handling
         if dice > 10_000 or sides > 10_000:
-            await ctx.send(
-                embed=Embed(
-                    title="Dice",
-                    description="**Error**: values can't be bigger than 10,000",
-                    color="#FF0000",
-                )
+            error(
+                ctx=ctx, title="Dice", description="values can't be bigger than 10,000"
             )
             return
         elif dice < 1 or sides < 1:
-            await ctx.send(
-                embed=Embed(
-                    title="Dice",
-                    description="**Error**: values must be bigger than 0",
-                    color="#FF0000",
-                )
-            )
+            error(ctx=ctx, title="Dice", description="values must be bigger than 0")
             return
 
         embed = Embed(color="#00FF00")
