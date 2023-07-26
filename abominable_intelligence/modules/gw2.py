@@ -7,7 +7,6 @@ from interactions import (
     Embed,
     slash_command,
     slash_option,
-    slash_str_option,
     subcommand,
 )
 from modules.MySQL import Sql
@@ -61,7 +60,7 @@ class Gw2(Extension):
         "gw2", name="save-api-key", description="Saves your API in the bot's database"
     )
     @slash_option(
-        name="API Key",
+        name="api-key",
         description="",
         opt_type=OptionType.STRING,
         required=True,
