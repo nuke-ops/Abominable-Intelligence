@@ -2,6 +2,7 @@ import requests
 import json
 from interactions import (
     Extension,
+    OptionType,
     SlashContext,
     Embed,
     slash_command,
@@ -59,10 +60,13 @@ class Gw2(Extension):
     @subcommand(
         "gw2", name="save-api-key", description="Saves your API in the bot's database"
     )
-    @slash_option(required=True)
-    async def save_api_key(
-        self, ctx: SlashContext, api_key: slash_str_option("API Key")
-    ):
+    @slash_option(
+        name="API Key",
+        description="",
+        opt_type=OptionType.STRING,
+        required=True,
+    )
+    async def save_api_key(self, ctx: SlashContext, api_key: str):
         if not self.gw2api.account_exists(api_key):
             await ctx.send("Invalid API")
             return
