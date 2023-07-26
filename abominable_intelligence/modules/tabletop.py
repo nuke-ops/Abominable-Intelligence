@@ -24,12 +24,14 @@ class Tabletop(Extension):
     ):
         # some pseudo error handling
         if dice > 10_000 or sides > 10_000:
-            error(
+            await error(
                 ctx=ctx, title="Dice", description="values can't be bigger than 10,000"
             )
             return
         elif dice < 1 or sides < 1:
-            error(ctx=ctx, title="Dice", description="values must be bigger than 0")
+            await error(
+                ctx=ctx, title="Dice", description="values must be bigger than 0"
+            )
             return
 
         embed = Embed(color="#00FF00")
