@@ -70,7 +70,7 @@ class Gw2(Extension):
     )
     async def save_api_key(self, ctx: SlashContext, api_key: str):
         if not self.gw2api.account_exists(api_key):
-            await error("Invalid API")
+            await error(ctx, "api_key", "Invalid API")
             return
         if self.sql.select(ctx.author.nickname):
             try:
