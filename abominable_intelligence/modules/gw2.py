@@ -60,7 +60,7 @@ class Gw2(Extension):
         "gw2", name="save-api-key", description="Saves your API in the bot's database"
     )
     @slash_option(
-        name="api-key",
+        name="api_key",
         description="",
         opt_type=OptionType.STRING,
         required=True,
