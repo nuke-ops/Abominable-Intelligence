@@ -8,10 +8,7 @@ from interactions import (
     Color,
 )
 from interactions.ext.paginators import Paginator
-from modules.core import Core
-
-error = Core.error
-##TODO encrypt and error handling
+from modules.core import error
 
 
 class Tabletop(Extension):

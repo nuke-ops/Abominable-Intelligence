@@ -9,10 +9,8 @@ from interactions import (
     slash_option,
     subcommand,
 )
-from modules.core import Core
+from modules.core import error
 from modules.MySQL import Sql
-
-error = Core.error
 
 
 class Gw2api:
