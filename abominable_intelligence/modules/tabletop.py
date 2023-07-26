@@ -43,7 +43,7 @@ class Tabletop(Extension):
         sum_pages = dice // (max_fields_per_page + 1) + 1
 
         # throw dice
-        for x in range(1, dice):
+        for x in range(1, dice + 1):
             fields_counter += 1
             throw = randint(1, sides)
             summary += throw
