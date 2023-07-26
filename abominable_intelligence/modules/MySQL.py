@@ -41,4 +41,7 @@ class Sql:
                     query = "SELECT * FROM gw2 WHERE username = %s"
                     cursor.execute(query, (username,))
                     rows = cursor.fetchall()
-                return encrypt_key.decrypt(rows[0][-1])
+                if rows:
+                    return encrypt_key.decrypt(rows[0][-1])
+                else:
+                    return None
