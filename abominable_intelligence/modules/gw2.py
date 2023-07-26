@@ -50,7 +50,7 @@ class Gw2(Extension):
         )
         embed.add_field(
             name="Verify",
-            value="Requries stored API key with access to Account API",
+            value="Requries stored API key with access to at least the Account API",
             inline=False,
         )
         await ctx.send(embed=embed)
