@@ -5,6 +5,7 @@ from interactions import (
     SlashContext,
     Embed,
     slash_command,
+    slash_option,
     slash_str_option,
     subcommand,
 )
@@ -58,6 +59,7 @@ class Gw2(Extension):
     @subcommand(
         "gw2", name="save-api-key", description="Saves your API in the bot's database"
     )
+    @slash_option(required=True)
     async def save_api_key(
         self, ctx: SlashContext, api_key: slash_str_option("API Key")
     ):
