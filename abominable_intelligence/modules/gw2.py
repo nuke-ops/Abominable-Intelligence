@@ -9,7 +9,10 @@ from interactions import (
     slash_option,
     subcommand,
 )
+from modules.core import Core
 from modules.MySQL import Sql
+
+error = Core.error
 
 
 class Gw2api:
@@ -67,7 +70,7 @@ class Gw2(Extension):
     )
     async def save_api_key(self, ctx: SlashContext, api_key: str):
         if not self.gw2api.account_exists(api_key):
-            await ctx.send("Invalid API")
+            await error("Invalid API")
             return
         if self.sql.select(ctx.author.nickname):
             try:
