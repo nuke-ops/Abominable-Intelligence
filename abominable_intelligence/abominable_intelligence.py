@@ -37,15 +37,6 @@ bot = lightbulb.BotApp(
 )
 
 
-@bot.command
-@lightbulb.option("test", "Amount of times to reapet")
-@lightbulb.command("ping", "checks that the bot is alive")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def ping(ctx: lightbulb.Context) -> None:
-    for x in range(1, int(ctx.options.test) + 1):
-        await ctx.respond(f"{x}. Pong")
-
-
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
     bot.load_extensions("extensions.tabletop")
