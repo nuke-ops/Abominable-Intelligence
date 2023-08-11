@@ -1,6 +1,6 @@
-hikari==23.2.1
-hikari-lightbulb==23.2.1
-hikari-miro==23.2.1
+hikari==2.0.0.dev120
+hikari-lightbulb==2.3.3
+hikari-miru==3.1.2
 attrs==23.1.0
 mysql-connector-python==8.0.33
 cryptography==41.0.2
