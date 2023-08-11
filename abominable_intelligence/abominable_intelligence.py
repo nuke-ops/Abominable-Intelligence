@@ -36,9 +36,10 @@ bot = lightbulb.BotApp(
         },
     },
 )
-if "miru" not in sys.modules:
+try:
     miru.install(bot)
-
+except:
+    print("miru is already loaded apparently, I guess, also fuck you miru")
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
