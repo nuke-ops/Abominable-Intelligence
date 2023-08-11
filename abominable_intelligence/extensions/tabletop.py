@@ -105,17 +105,17 @@ async def dice(ctx: lightbulb.Context):
             await self.update_page(ctx)
 
         async def update_page(self, ctx: miru.Context):
-            await ctx.edit_response(
-                content="Dice rolls:", embed=self.embeds[self.current_page]
-            )
+            if self.current_page < sum_pages:
+                await ctx.edit_response(embed=self.embeds[self.current_page])
+            else:
+                await ctx.edit_response(embed=self.embeds[0])
 
-    paginator_view = DicePaginator(embeds)
-
-    message = await ctx.respond(
-        content="Dice rolls:", embed=embeds[0], components=paginator_view.build()
-    )
-
-    await paginator_view.start(message)
+    if sum_pages <= 1:
+        await ctx.respond(embeds[0])
+    else:
+        paginator_view = DicePaginator(embeds)
+        message = await ctx.respond(embed=embeds[0], components=paginator_view.build())
+        await paginator_view.start(message)
 
 
 def load(bot):
