@@ -10,11 +10,15 @@ from decorators import administration_only
 plugin = lightbulb.Plugin("Core")
 
 
-async def error(ctx: lightbulb.Context, title: str, description: str):
+async def error(
+    ctx: lightbulb.Context, title: str, description: str, error: str = None
+) -> None:
     await ctx.respond(
         embed=hikari.Embed(
             title=title,
-            description=f"**Error**: {description}",
+            description=f"{description}\n**Error**: ```{error}```"
+            if error
+            else description,
             color=hikari.Color.of(0xFF0000),
         )
     )

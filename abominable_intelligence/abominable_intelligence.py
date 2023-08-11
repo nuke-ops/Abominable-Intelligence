@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import yaml
 
 import hikari
@@ -36,10 +37,13 @@ bot = lightbulb.BotApp(
         },
     },
 )
-miru.install(bot)
+if "miru" not in sys.modules:
+    miru.install(bot)
+
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
+    bot.load_extensions("extensions.listeners")
 
     bot.load_extensions("extensions.git")
     bot.load_extensions("extensions.tabletop")
