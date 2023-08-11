@@ -2,6 +2,7 @@ import logging
 import sys
 import traceback
 
+import hikari
 import lightbulb
 from extensions.core import error
 from global_variables import logs_channel
@@ -10,15 +11,17 @@ plugin = lightbulb.Plugin("listeners")
 
 
 @plugin.listener(lightbulb.events.LightbulbStartedEvent)
-async def on_ready(bot):
+async def on_ready(event: lightbulb.LightbulbStartedEvent):
     try:
         print("Bot started, I think")
         logging.info("Abominable intelligence has started!")
         if "restarted" in sys.argv:
-            channel = bot.get_channel(sys.argv[sys.argv.index("restarted") + 1])
+            channel_id = sys.argv[sys.argv.index("restarted") + 1]
             sys.argv.remove(sys.argv[sys.argv.index("restarted") + 1])
             sys.argv.remove("restarted")
-            await channel.send("Restart succeeded")
+            await event.bot.rest.create_message(
+                channel=channel_id, content="Restart succeeded"
+            )
     except Exception:
         traceback.print_exc()
 
@@ -32,10 +35,8 @@ async def on_error(event: lightbulb.CommandErrorEvent) -> None:
             description="Something went wrong during invocation of command",
             error=event.exception.original,
         )
-
-    # Unwrap the exception to get the original cause
-    exception = event.exception.__cause__ or event.exception
-    await event.context.respond()
+    else:
+        print("Somethin went wrong")  # I suppose
 
 
 def load(bot):

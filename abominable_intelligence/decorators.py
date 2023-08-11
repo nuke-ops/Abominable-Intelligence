@@ -11,6 +11,6 @@ def administration_only(func):
         ]:
             await func(ctx, *args, **kwargs)
         else:
-            await ctx.respond("You don't have access to that command", ephemeral=True)
+            await ctx.respond("You don't have access to that command")
 
     return wrapper

@@ -10,11 +10,14 @@ plugin = lightbulb.Plugin("Core")
 
 
 async def error(
-    ctx: lightbulb.Context, title: str, description: str, error: str = None
+    ctx: lightbulb.Context,
+    title: str = None,
+    description: str = None,
+    error: str = None,
 ) -> None:
     await ctx.respond(
         embed=hikari.Embed(
-            title=title,
+            title=title if title else "Error",
             description=f"{description}\n**Error**: ```{error}```"
             if error
             else description,
