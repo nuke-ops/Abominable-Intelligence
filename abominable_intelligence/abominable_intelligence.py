@@ -40,6 +40,8 @@ miru.install(bot)
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
+
+    bot.load_extensions("extensions.git")
     bot.load_extensions("extensions.tabletop")
     bot.load_extensions("extensions.gw2")
 
