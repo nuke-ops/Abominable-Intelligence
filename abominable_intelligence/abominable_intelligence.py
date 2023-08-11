@@ -4,7 +4,6 @@ import sys
 
 import hikari
 import lightbulb
-import miru
 import yaml
 from global_variables import config_path, script_dir
 
@@ -36,8 +35,6 @@ bot = lightbulb.BotApp(
         },
     },
 )
-if "miru" not in sys.modules:
-    miru.install(bot)
 
 
 if __name__ == "__main__":
