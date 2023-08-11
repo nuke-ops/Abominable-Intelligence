@@ -76,11 +76,11 @@ async def dice(ctx: lightbulb.Context):
     # anyway, I can die in piece now, I don't care if this is the correct way.
     class DicePaginator(miru.View):
         def __init__(self, embeds):
-            super().__init__(timeout=600)
+            super().__init__(timeout=300)
             self.embeds = embeds
             self.current_page = 0
 
-        @miru.button(label="|<", style=hikari.ButtonStyle.PRIMARY)
+        @miru.button(label="|<", style=hikari.ButtonStyle.SUCCESS)
         async def first_page(self, button: miru.Button, ctx: miru.Context):
             self.current_page = 0
             await self.update_page(ctx)
@@ -99,7 +99,7 @@ async def dice(ctx: lightbulb.Context):
                 self.current_page = 0
             await self.update_page(ctx)
 
-        @miru.button(label=">|", style=hikari.ButtonStyle.PRIMARY)
+        @miru.button(label=">|", style=hikari.ButtonStyle.SUCCESS)
         async def last_page(self, button: miru.Button, ctx: miru.Context):
             self.current_page = len(self.embeds) - 1
             await self.update_page(ctx)
@@ -109,6 +109,11 @@ async def dice(ctx: lightbulb.Context):
                 await ctx.edit_response(embed=self.embeds[self.current_page])
             else:
                 await ctx.edit_response(embed=self.embeds[0])
+
+        async def on_timeout(self):
+            for button in self.children:
+                button.disabled = True
+            await self.message.edit(components=self.build())
 
     if sum_pages <= 1:
         await ctx.respond(embeds[0])
