@@ -1,5 +1,5 @@
 from random import randint
-import sys
+
 import hikari
 import lightbulb
 import miru
@@ -17,8 +17,6 @@ plugin = lightbulb.Plugin("Tabletop")
 @lightbulb.command("dice", "rolls the dice")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def dice(ctx: lightbulb.Context):
-    if "miru" not in sys.modules:
-        miru.install(ctx.bot)
     # some pseudo error handling
     if ctx.options.dice > 10_000 or ctx.options.sides > 10_000:
         await error(
