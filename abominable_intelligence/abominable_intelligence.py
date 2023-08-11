@@ -18,12 +18,12 @@ try:
         guild_id = f["guild_id"]
 except FileNotFoundError:
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
-    guild_id = os.environ.get("DISCORD_GUILD_ID")
+    guild_id = int(os.environ.get("DISCORD_GUILD_ID"))
 
 
 bot = lightbulb.BotApp(
     token=bot_token,
-    prefix="!test ",
+    prefix="!aa ",
     intents=hikari.Intents.ALL,
     default_enabled_guilds=guild_id,
     logs={
