@@ -22,13 +22,13 @@ sql = Sql().gw2()
 ###
 
 
-def list_guilds(api_key):
+def _list_guilds(api_key):
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return json.loads(response.text)["guilds"]
 
 
-def account_exists(api_key):
+def _account_exists(api_key):
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return True if response.status_code == 200 else False
@@ -69,7 +69,7 @@ async def help(ctx: lightbulb.Context):
 @lightbulb.command("save-api-key", "Saves the API key in the bot's database")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.Context):
-    if not account_exists(ctx.options.api_key):
+    if not _account_exists(ctx.options.api_key):
         await error(ctx, "api_key", "Invalid API")
         return
     if sql.select(ctx.member.nickname):
@@ -95,10 +95,10 @@ async def verify(ctx: lightbulb.Context):
     api_key = sql.select(ctx.member.nickname).decode("utf-8")
     if api_key:
         output = ""
-        if guild_nukeops in list_guilds(api_key):
+        if guild_nukeops in _list_guilds(api_key):
             await ctx.member.add_role(1012181221704466513)
             output += "Added [NUKE] rank\n"
-        if guild_afk in list_guilds(api_key):
+        if guild_afk in _list_guilds(api_key):
             await ctx.member.add_role(1017008230444040212)
             output += "Added [AFK] rank\n"
         if output != "":
