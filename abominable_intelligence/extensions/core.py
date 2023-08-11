@@ -29,7 +29,8 @@ async def restart(ctx: lightbulb.Context):
     try:
         # Restart the process, pass last arguments and "restarted" with channel id to catch it in on_ready() in listeners.py module
         os.execv(
-            sys.executable, ["python"] + sys.argv + ["restarted", str(ctx.channel_id)]
+            sys.executable,
+            ["python"] + sys.argv + ["restarted", str(ctx.channel_id)],
         )
     except Exception:
         await ctx.respond("Restart failed")

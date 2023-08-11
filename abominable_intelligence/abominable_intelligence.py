@@ -4,6 +4,7 @@ import yaml
 
 import hikari
 import lightbulb
+import miru
 
 from global_variables import script_dir, config_path
 
@@ -35,10 +36,11 @@ bot = lightbulb.BotApp(
         },
     },
 )
-
+miru.install(bot)
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
     bot.load_extensions("extensions.tabletop")
+    bot.load_extensions("extensions.gw2")
 
     bot.run()

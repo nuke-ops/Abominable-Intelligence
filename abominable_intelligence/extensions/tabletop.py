@@ -1,8 +1,10 @@
 import hikari
 import lightbulb
-from lightbulb.utils import nav
-from extensions.core import error
 
+# from lightbulb.utils import nav
+from extensions.core import error
+import miru
+from miru.ext import nav
 from random import randint
 
 plugin = lightbulb.Plugin("Tabletop")
@@ -70,8 +72,50 @@ async def dice(ctx: lightbulb.Context):
         description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Summary**: **{summary}**"
         embeds[x].description = description
 
-    navigator = nav.ButtonNavigator(embeds)
-    await navigator.run(ctx)
+    # figuring this out gave me more headache then it should probably.
+    # anyway, I can die in piece now, I don't care if this is the correct way.
+    class DicePaginator(miru.View):
+        def __init__(self, embeds):
+            super().__init__(timeout=600)
+            self.embeds = embeds
+            self.current_page = 0
+
+        @miru.button(label="|<", style=hikari.ButtonStyle.PRIMARY)
+        async def first_page(self, button: miru.Button, ctx: miru.Context):
+            self.current_page = 0
+            await self.update_page(ctx)
+
+        @miru.button(label="<", style=hikari.ButtonStyle.PRIMARY)
+        async def previous_page(self, button: miru.Button, ctx: miru.Context):
+            self.current_page -= 1
+            if self.current_page < 0:
+                self.current_page = len(self.embeds) - 1
+            await self.update_page(ctx)
+
+        @miru.button(label=">", style=hikari.ButtonStyle.PRIMARY)
+        async def next_page(self, button: miru.Button, ctx: miru.Context):
+            self.current_page += 1
+            if self.current_page >= len(self.embeds):
+                self.current_page = 0
+            await self.update_page(ctx)
+
+        @miru.button(label=">|", style=hikari.ButtonStyle.PRIMARY)
+        async def last_page(self, button: miru.Button, ctx: miru.Context):
+            self.current_page = len(self.embeds) - 1
+            await self.update_page(ctx)
+
+        async def update_page(self, ctx: miru.Context):
+            await ctx.edit_response(
+                content="Dice rolls:", embed=self.embeds[self.current_page]
+            )
+
+    paginator_view = DicePaginator(embeds)
+
+    message = await ctx.respond(
+        content="Dice rolls:", embed=embeds[0], components=paginator_view.build()
+    )
+
+    await paginator_view.start(message)
 
 
 def load(bot):

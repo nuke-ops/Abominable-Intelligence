@@ -1,108 +1,113 @@
 import requests
 import json
-from interactions import (
-    Extension,
-    OptionType,
-    SlashContext,
-    Embed,
-    slash_command,
-    slash_option,
-    subcommand,
-)
-from modules.core import error
-from modules.MySQL import Sql
+
+import hikari
+import lightbulb
+
+from extensions.core import error
+from extensions.MySQL import Sql
+
+plugin = lightbulb.Plugin("gw2")
 
 
-class Gw2api:
-    def __init__(self):
-        self.account = "https://api.guildwars2.com/v2/account"
+api_account = "https://api.guildwars2.com/v2/account"
+# someday I'll make it configurable, probably
+guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
+guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
 
-    def guilds(self, api_key):
-        print(api_key)
-        headers = {"Authorization": "Bearer " + api_key}
-        response = requests.get(self.account, headers=headers)
-        return json.loads(response.text)["guilds"]
+sql = Sql().gw2()
 
-    def account_exists(self, api_key):
-        headers = {"Authorization": "Bearer " + api_key}
-        response = requests.get(self.account, headers=headers)
-        return True if response.status_code == 200 else False
+###
+### internal functions
+###
 
 
-class Gw2(Extension):
-    def __init__(self, ctx):
-        self.gw2api = Gw2api()
+def list_guilds(api_key):
+    headers = {"Authorization": "Bearer " + api_key}
+    response = requests.get(api_account, headers=headers)
+    return json.loads(response.text)["guilds"]
 
-        self.guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
-        self.guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
 
-        self.sql = Sql().gw2()
+def account_exists(api_key):
+    headers = {"Authorization": "Bearer " + api_key}
+    response = requests.get(api_account, headers=headers)
+    return True if response.status_code == 200 else False
 
-    @slash_command(description="Guild Wars 2 commands")
-    async def gw2(self, ctx: SlashContext):
-        pass
 
-    @subcommand("gw2", description="Get help for gw2 commands")
-    async def help(self, ctx: SlashContext):
-        embed = Embed(description="Help", color="#E0FFFF")
-        embed.add_field(
-            name="Save API key",
-            value="get the key from https://account.arena.net/applications",
-            inline=False,
-        )
-        embed.add_field(
-            name="Verify",
-            value="Requries stored API key with access to at least the Account API",
-            inline=False,
-        )
-        await ctx.send(embed=embed)
+###
+### commands
+###
 
-    @subcommand(
-        "gw2", name="save-api-key", description="Saves your API in the bot's database"
+
+@plugin.command
+@lightbulb.command("gw2", "gw2 commands")
+@lightbulb.implements(lightbulb.SlashCommandGroup)
+async def gw2(ctx: lightbulb.Context):
+    pass
+
+
+@gw2.child
+@lightbulb.command("help", "guide for gw2 commands")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def help(ctx: lightbulb.Context):
+    embed = hikari.Embed(description="Help", color=hikari.Color.of(0xE0FFFF))
+    embed.add_field(
+        name="Save API key",
+        value="get the key from https://account.arena.net/applications",
+        inline=False,
     )
-    @slash_option(
-        name="api_key",
-        description="",
-        opt_type=OptionType.STRING,
-        required=True,
+    embed.add_field(
+        name="Verify",
+        value="Requries stored API key with access to at least the Account API",
+        inline=False,
     )
-    async def save_api_key(self, ctx: SlashContext, api_key: str):
-        if not self.gw2api.account_exists(api_key):
-            await error(ctx, "api_key", "Invalid API")
-            return
-        if self.sql.select(ctx.author.nickname):
-            try:
-                await ctx.send("User already in database, overwriting...")
-                self.sql.update(api_key, ctx.author.nickname)
-                await ctx.send("API saved successfully")
-                return
-            except Exception as e:
-                await ctx.send("Database Error, most likely")
-                return
+    await ctx.respond(embed=embed)
+
+
+@gw2.child
+@lightbulb.option("api_key", "API key", str, required=True)
+@lightbulb.command("save-api-key", "Saves the API key in the bot's database")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def save_api_key(ctx: lightbulb.Context):
+    if not account_exists(ctx.options.api_key):
+        await error(ctx, "api_key", "Invalid API")
+        return
+    if sql.select(ctx.member.nickname):
         try:
-            self.sql.insert(ctx.author.nickname, api_key)
-            await ctx.send("API saved successfully")
-        except:
-            await ctx.send("Database Error, most likely")
+            await ctx.respond("User already in database, overwriting...")
+            sql.update(ctx.options.api_key, ctx.member.nickname)
+            await ctx.respond("API saved successfully")
+            return
+        except Exception as e:
+            await ctx.respond("Database Error, most likely")
+            return
+    try:
+        sql.insert(ctx.member.nickname, ctx.options.api_key)
+        await ctx.respond("API saved successfully")
+    except:
+        await ctx.respond("Database Error, most likely")
 
-    @subcommand("gw2", description="Asigns you ranks based on your guilds")
-    async def verify(self, ctx: SlashContext):
-        api_key = str(self.sql.select(ctx.author.nickname))
-        if api_key:
-            output = ""
-            if self.guild_nukeops in self.gw2api.guilds(api_key):
-                await ctx.author.add_role(1012181221704466513)
-                output += "Added [NUKE] rank\n"
-            if self.guild_afk in self.gw2api.guilds(api_key):
-                await ctx.author.add_role(1017008230444040212)
-                output += "Added [AFK] rank\n"
-            if output != "":
-                await ctx.send(output)
-            else:
-                await ctx.send("Guilds not found, none of ranks were asigned")
+
+@gw2.child
+@lightbulb.command("verify", "Asigns ranks based on your in-game guilds")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def verify(ctx: lightbulb.Context):
+    api_key = sql.select(ctx.member.nickname).decode("utf-8")
+    if api_key:
+        output = ""
+        if guild_nukeops in list_guilds(api_key):
+            await ctx.member.add_role(1012181221704466513)
+            output += "Added [NUKE] rank\n"
+        if guild_afk in list_guilds(api_key):
+            await ctx.member.add_role(1017008230444040212)
+            output += "Added [AFK] rank\n"
+        if output != "":
+            await ctx.respond(output)
         else:
-            await ctx.send("API key not found")
+            await ctx.respond("Guilds not found, none of ranks were asigned")
+    else:
+        await ctx.respond("API key not found")
 
 
-def setup(bot):
-    Gw2(bot)
+def load(bot):
+    bot.add_plugin(plugin)
