@@ -18,7 +18,7 @@ try:
         guild_id = f["guild_id"]
 except FileNotFoundError:
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
-    guild_id = os.environ.get("DISCORD_GUILD_ID)")
+    guild_id = os.environ.get("DISCORD_GUILD_ID")
 
 
 bot = lightbulb.BotApp(
