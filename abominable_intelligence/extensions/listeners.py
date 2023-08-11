@@ -1,9 +1,8 @@
 import logging
 import sys
 import traceback
-import hikari
-import lightbulb
 
+import lightbulb
 from extensions.core import error
 from global_variables import logs_channel
 

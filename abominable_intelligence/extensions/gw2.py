@@ -1,9 +1,8 @@
-import requests
 import json
 
 import hikari
 import lightbulb
-
+import requests
 from extensions.core import error
 from extensions.MySQL import Sql
 

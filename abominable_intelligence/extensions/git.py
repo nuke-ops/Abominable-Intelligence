@@ -1,9 +1,9 @@
 import subprocess
 import traceback
-import lightbulb
 
-from extensions.core import restart
+import lightbulb
 from decorators import administration_only
+from extensions.core import restart
 
 plugin = lightbulb.Plugin("git")
 

@@ -1,11 +1,12 @@
+from random import randint
+
 import hikari
 import lightbulb
+import miru
 
 # from lightbulb.utils import nav
 from extensions.core import error
-import miru
 from miru.ext import nav
-from random import randint
 
 plugin = lightbulb.Plugin("Tabletop")
 

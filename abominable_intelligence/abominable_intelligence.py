@@ -1,13 +1,12 @@
 import logging
 import os
 import sys
-import yaml
 
 import hikari
 import lightbulb
 import miru
-
-from global_variables import script_dir, config_path
+import yaml
+from global_variables import config_path, script_dir
 
 # set bot's work directory
 os.chdir(script_dir)

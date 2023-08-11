@@ -4,7 +4,6 @@ import traceback
 
 import hikari
 import lightbulb
-
 from decorators import administration_only
 
 plugin = lightbulb.Plugin("Core")

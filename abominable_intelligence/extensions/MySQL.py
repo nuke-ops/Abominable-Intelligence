@@ -1,7 +1,7 @@
 import mysql.connector
 import yaml
-from global_variables import config_path
 from cryptography.fernet import Fernet
+from global_variables import config_path
 
 
 def _setup():
