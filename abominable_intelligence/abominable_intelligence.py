@@ -1,12 +1,10 @@
-import logging
 import os
-import sys
 
 import hikari
 import lightbulb
 import miru
 import yaml
-from global_variables import config_path, script_dir
+from global_variables import config_path, guild_id, script_dir
 
 # set bot's work directory
 os.chdir(script_dir)
@@ -15,10 +13,8 @@ try:
     with open(config_path) as conf:
         f = yaml.load(conf, Loader=yaml.FullLoader)
         bot_token = f["bot_token"]
-        guild_id = f["guild_id"]
 except FileNotFoundError:
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
-    guild_id = int(os.environ.get("DISCORD_GUILD_ID"))
 
 
 bot = lightbulb.BotApp(
@@ -39,7 +35,7 @@ bot = lightbulb.BotApp(
 try:
     miru.install(bot)
 except:
-    print("miru is already loaded apparently, I guess, also fuck you miru")
+    print("Miru is already loaded, apparently, I guess.\nAlso, fuck you miru.")
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")

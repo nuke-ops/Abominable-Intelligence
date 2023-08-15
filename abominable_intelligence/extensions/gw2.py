@@ -49,15 +49,22 @@ async def gw2(ctx: lightbulb.Context):
 @lightbulb.command("help", "guide for gw2 commands")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def help(ctx: lightbulb.Context):
-    embed = hikari.Embed(description="Help", color=hikari.Color.of(0xE0FFFF))
+    embed = hikari.Embed(
+        title="Help",
+        description="**Gw2 API documentation**: https://wiki.guildwars2.com/wiki/API:Main\
+        \n**Source code of the module**: https://github.com/maksxpl/Abominable-Intelligence/blob/main/abominable_intelligence/extensions/gw2.py",
+        color=hikari.Color.of(0xE0FFFF),
+    )
     embed.add_field(
-        name="Save API key",
-        value="get the key from https://account.arena.net/applications",
+        name="/gw2 save-api-key [api_key]",
+        value="Saves the api key\
+        \nGet the key from https://account.arena.net/applications",
         inline=False,
     )
     embed.add_field(
-        name="Verify",
-        value="Requries stored API key with access to at least the Account API",
+        name="/gw2 verify",
+        value="Assigns ranks based on your in-game guilds\
+        \nRequries a stored API key with access to at least the Account API",
         inline=False,
     )
     await ctx.respond(embed=embed)
@@ -65,7 +72,7 @@ async def help(ctx: lightbulb.Context):
 
 @gw2.child
 @lightbulb.option("api_key", "API key", str, required=True)
-@lightbulb.command("save-api-key", "Saves the API key in the bot's database")
+@lightbulb.command("save-api-key", "Saves the API key")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.Context):
     if not _account_exists(ctx.options.api_key):
@@ -88,7 +95,7 @@ async def save_api_key(ctx: lightbulb.Context):
 
 
 @gw2.child
-@lightbulb.command("verify", "Asigns ranks based on your in-game guilds")
+@lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.Context):
     api_key = sql.select(ctx.member.nickname).decode("utf-8")
