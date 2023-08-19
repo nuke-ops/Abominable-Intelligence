@@ -18,9 +18,9 @@ plugin = lightbulb.Plugin("Tabletop")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def dice(ctx: lightbulb.Context):
     # some pseudo error handling
-    if ctx.options.dice > 10_000 or ctx.options.sides > 10_000:
+    if ctx.options.dice > 500 or ctx.options.sides > 500:
         await error(
-            ctx=ctx, title="Dice", description="values can't be bigger than 10,000"
+            ctx=ctx, title="Dice", description="values can't be bigger than 500"
         )
         return
     elif ctx.options.dice < 1 or ctx.options.sides < 1:

@@ -38,6 +38,7 @@ except:
     print("Miru is already loaded, apparently, I guess.\nAlso, fuck you miru.")
 
 
+# to be sure bot is able to write
 @bot.listen(hikari.MessageCreateEvent)
 async def on_message_create(event: hikari.MessageCreateEvent):
     if event.content and bot.get_me().mention in event.content:
@@ -51,5 +52,8 @@ if __name__ == "__main__":
     bot.load_extensions("extensions.git")
     bot.load_extensions("extensions.tabletop")
     bot.load_extensions("extensions.gw2")
+
+    if os.path.exists(script_dir + "\\extensions\\test.py"):
+        bot.load_extensions("extensions.test")
 
     bot.run()
