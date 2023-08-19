@@ -37,6 +37,13 @@ try:
 except:
     print("Miru is already loaded, apparently, I guess.\nAlso, fuck you miru.")
 
+
+@bot.listen(hikari.MessageCreateEvent)
+async def on_message_create(event: hikari.MessageCreateEvent):
+    if event.content and bot.get_me().mention in event.content:
+        await event.message.respond("You mentioned me!")
+
+
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")
     bot.load_extensions("extensions.listeners")
