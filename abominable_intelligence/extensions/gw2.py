@@ -8,13 +8,13 @@ from extensions.MySQL import Sql
 
 plugin = lightbulb.Plugin("gw2")
 
+sql = Sql().gw2()
 
 api_account = "https://api.guildwars2.com/v2/account"
 # someday I'll make it configurable, probably
 guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
 guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
 
-sql = Sql().gw2()
 
 ###
 ### internal functions

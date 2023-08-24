@@ -1,3 +1,5 @@
 __pycache__
-abominable_intelligence/config.yaml
+abominable_intelligence/data/config.json
+abominable_intelligence/data/data.json
+abominable_intelligence/data/sql.json
 abominable_intelligence/extensions/test.py
