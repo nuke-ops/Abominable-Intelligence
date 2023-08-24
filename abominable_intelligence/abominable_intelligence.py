@@ -9,14 +9,15 @@ from data_manager import bot_dir, config
 os.chdir(bot_dir)
 
 config = config()
-if not config["bot_token"]:
-    bot_token = os.environ.get("DISCORD_BOT_TOKEN")
+
+bot_token = config.get("bot_token") or os.environ.get("DISCORD_BOT_TOKEN")
+owner_ids = config["owner_id"] or None
 
 bot = lightbulb.BotApp(
-    token=config["bot_token"],
+    token=bot_token,
     prefix=config["prefix"],
     intents=hikari.Intents.ALL,
-    owner_ids=config["owner_id"],
+    owner_ids=owner_ids,
     default_enabled_guilds=config["guild_id"],
     logs={
         "version": 1,
