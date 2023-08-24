@@ -35,3 +35,4 @@ def config_sql() -> dict:
             return json.loads(conf.read())
     except FileNotFoundError:
         print("config_sql file not found")
+        return {"encrypt_key": None}
