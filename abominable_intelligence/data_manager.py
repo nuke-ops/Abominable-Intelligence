@@ -11,6 +11,12 @@ def config() -> dict:
             return json.loads(conf.read())
     except FileNotFoundError:
         print("config file not found")
+        return {
+            "bot_token": os.environ.get("DISCORD_BOT_TOKEN"),
+            "owner_id": (),
+            "prefix": (),
+            "guild_id": (),
+        }
 
 
 def data() -> dict:

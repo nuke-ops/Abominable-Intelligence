@@ -10,14 +10,14 @@ os.chdir(bot_dir)
 
 config = config()
 
-bot_token = config["bot_token"] or os.environ.get("DISCORD_BOT_TOKEN")
-owner_ids = config["owner_id"] or None
+# bot_token = config["bot_token"] or os.environ.get("DISCORD_BOT_TOKEN")
+# owner_ids = config["owner_id"] or None
 
 bot = lightbulb.BotApp(
-    token=bot_token,
+    token=config["bot_token"],
     prefix=config["prefix"],
     intents=hikari.Intents.ALL,
-    owner_ids=owner_ids,
+    owner_ids=config["owner_id"],
     default_enabled_guilds=config["guild_id"],
     logs={
         "version": 1,
