@@ -10,7 +10,7 @@ os.chdir(bot_dir)
 
 config = config()
 
-bot_token = config.get("bot_token") or os.environ.get("DISCORD_BOT_TOKEN")
+bot_token = config["bot_token"] or os.environ.get("DISCORD_BOT_TOKEN")
 owner_ids = config["owner_id"] or None
 
 bot = lightbulb.BotApp(
