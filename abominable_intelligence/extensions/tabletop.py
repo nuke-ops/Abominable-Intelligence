@@ -3,10 +3,7 @@ from random import randint
 import hikari
 import lightbulb
 import miru
-
-# from lightbulb.utils import nav
 from extensions.core import error
-from miru.ext import nav
 
 plugin = lightbulb.Plugin("Tabletop")
 

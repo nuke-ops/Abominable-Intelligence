@@ -3,25 +3,21 @@ import os
 import hikari
 import lightbulb
 import miru
-import yaml
-from global_variables import config_path, guild_id, script_dir
+from data_manager import bot_dir, config
 
 # set bot's work directory
-os.chdir(script_dir)
-# load bot token and guild id
-try:
-    with open(config_path) as conf:
-        f = yaml.load(conf, Loader=yaml.FullLoader)
-        bot_token = f["bot_token"]
-except FileNotFoundError:
+os.chdir(bot_dir)
+
+config = config()
+if not config["bot_token"]:
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
 
-
 bot = lightbulb.BotApp(
-    token=bot_token,
-    prefix="!aa ",
+    token=config["bot_token"],
+    prefix=config["prefix"],
     intents=hikari.Intents.ALL,
-    default_enabled_guilds=guild_id,
+    owner_ids=config["owner_id"],
+    default_enabled_guilds=config["guild_id"],
     logs={
         "version": 1,
         "incremental": True,
@@ -32,13 +28,14 @@ bot = lightbulb.BotApp(
         },
     },
 )
+
 try:
     miru.install(bot)
 except:
     print("Miru is already loaded, apparently, I guess.\nAlso, fuck you miru.")
 
 
-# to be sure bot is able to write
+# to ensure the bot's ability to write
 @bot.listen(hikari.MessageCreateEvent)
 async def on_message_create(event: hikari.MessageCreateEvent):
     if event.content and bot.get_me().mention in event.content:
@@ -53,7 +50,7 @@ if __name__ == "__main__":
     bot.load_extensions("extensions.tabletop")
     bot.load_extensions("extensions.gw2")
 
-    if os.path.exists(script_dir + "/extensions/test.py"):
+    if os.path.exists(bot_dir + "/extensions/test.py"):
         bot.load_extensions("extensions.test")
 
     bot.run()
