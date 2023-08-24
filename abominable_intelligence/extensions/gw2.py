@@ -14,7 +14,6 @@ api_account = "https://api.guildwars2.com/v2/account"
 guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
 guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
 
-sql = Sql().gw2()
 
 ###
 ### internal functions
@@ -75,6 +74,7 @@ async def help(ctx: lightbulb.Context):
 @lightbulb.command("save-api-key", "Saves the API key")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.Context):
+    sql = Sql().gw2()
     if not _account_exists(ctx.options.api_key):
         await error(ctx, "api_key", "Invalid API")
         return
@@ -98,6 +98,7 @@ async def save_api_key(ctx: lightbulb.Context):
 @lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.Context):
+    sql = Sql().gw2()
     api_key = sql.select(ctx.member.nickname).decode("utf-8")
     if api_key:
         output = ""
