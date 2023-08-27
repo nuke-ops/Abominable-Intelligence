@@ -1,6 +1,8 @@
 import functools
 from data_manager import config
 
+config = config()
+
 
 def administration_only(func):
     @functools.wraps(func)
