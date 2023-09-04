@@ -32,6 +32,7 @@ async def error(
 @administration_only
 async def restart(ctx: lightbulb.Context):
     await ctx.respond("Restarting the bot...")
+    await ctx.bot.rest.trigger_typing()
     try:
         # Restart the process, pass last arguments and "restarted" with channel id to catch it in on_ready() in listeners.py module
         os.execv(
