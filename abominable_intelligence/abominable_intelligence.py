@@ -5,13 +5,8 @@ import lightbulb
 import miru
 from data_manager import bot_dir, config
 
-# set bot's work directory
-os.chdir(bot_dir)
-
+os.chdir(bot_dir)  # set bot's work directory
 config = config()
-
-# bot_token = config["bot_token"] or os.environ.get("DISCORD_BOT_TOKEN")
-# owner_ids = config["owner_id"] or None
 
 bot = lightbulb.BotApp(
     token=config["bot_token"],
@@ -24,7 +19,7 @@ bot = lightbulb.BotApp(
         "incremental": True,
         "loggers": {
             "hikari": {"level": "INFO"},
-            "hikari.ratelimits": {"level": "TRACE_HIKARI"},
+            # "hikari.ratelimits": {"level": "TRACE_HIKARI"},
             "lightbulb": {"level": "INFO"},
         },
     },
@@ -33,14 +28,10 @@ bot = lightbulb.BotApp(
 try:
     miru.install(bot)
 except:
-    print("Miru is already loaded, apparently, I guess.\nAlso, fuck you miru.")
-
-
-# to ensure the bot's ability to write
-@bot.listen(hikari.MessageCreateEvent)
-async def on_message_create(event: hikari.MessageCreateEvent):
-    if event.content and bot.get_me().mention in event.content:
-        await event.message.respond("You mentioned me!")
+    print(
+        "Miru is already loaded, apparently, I guess.\n\
+                    Also, fuck you miru."
+    )
 
 
 if __name__ == "__main__":
