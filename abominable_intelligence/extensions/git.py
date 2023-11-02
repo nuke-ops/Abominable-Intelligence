@@ -1,6 +1,7 @@
 import subprocess
 import traceback
 
+import hikari
 import lightbulb
 from decorators import administration_only
 from extensions.core import restart
@@ -66,6 +67,36 @@ async def pull(ctx: lightbulb.Context):
             await restart(ctx)
     except Exception:
         await ctx.respond("Pull failed")
+        traceback.print_exc()
+
+
+@git.child
+@lightbulb.command("reset", "resets the local branch")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+@administration_only
+async def reset(ctx: lightbulb.Context):
+    message = await ctx.respond("Backing up the branch...")
+    try:
+        message = await message.edit(f"Removing old backup")
+        remove_backup = subprocess.check_output(
+            ["git", "branch", "--delete", "backup-master"]
+        ).decode("ascii")
+        message = await message.edit(f"{remove_backup}")
+        backup = subprocess.check_output(["git", "branch", "backup-master"]).decode(
+            "ascii"
+        )
+        message = await message.edit("Old branch backed up")
+    except Exception as e:
+        await ctx.respond("Backup failed")
+
+    message = await ctx.respond("Resetting the branch...\n")
+    try:
+        branch_reset = subprocess.check_output(["git", "reset", "--hard"]).decode(
+            "ascii"
+        )
+        await message.edit(branch_reset)
+    except Exception:
+        await ctx.respond(message.content + "Reset failed")
         traceback.print_exc()
 
 
