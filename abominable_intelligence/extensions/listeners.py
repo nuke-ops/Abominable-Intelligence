@@ -9,7 +9,7 @@ plugin = lightbulb.Plugin("listeners")
 
 
 @plugin.listener(lightbulb.events.LightbulbStartedEvent)
-async def on_ready(event: lightbulb.LightbulbStartedEvent):
+async def on_ready(event: lightbulb.LightbulbStartedEvent) -> None:
     try:
         print("Bot started, I think")
         logging.info("Abominable intelligence has started!")
@@ -26,15 +26,16 @@ async def on_ready(event: lightbulb.LightbulbStartedEvent):
 
 @plugin.listener(lightbulb.CommandErrorEvent)
 async def on_error(event: lightbulb.CommandErrorEvent) -> None:
-    if isinstance(event.exception, lightbulb.CommandInvocationError):
-        await error(
-            ctx=event.context,
-            title=event.context.command.name,
-            description="Something went wrong during invocation of command",
-            error=event.exception.original,
-        )
-    else:
-        print("Somethin went wrong")  # I suppose
+    if not isinstance(event.exception, lightbulb.CommandInvocationError):
+        logging.warning(event.exception.original)
+        return
+    await error(
+        ctx=event.context,
+        title=event.context.command.name,
+        description="Something went wrong during invocation of command",
+        error=event.exception.original,
+    )
+    return
 
 
 def load(bot):

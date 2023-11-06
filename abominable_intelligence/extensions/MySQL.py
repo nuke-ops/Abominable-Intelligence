@@ -12,7 +12,7 @@ class Sql:
 
     class gw2:
         @classmethod
-        def insert(cls, username: str, api_key: str):
+        def insert(cls, username: str, api_key: str) -> None:
             with mysql.connector.connect(**Sql.config_sql) as connection:
                 with connection.cursor() as cursor:
                     query = "INSERT INTO gw2 (username, api_key) VALUES (%s, %s)"
@@ -21,7 +21,7 @@ class Sql:
                     connection.commit()
 
         @classmethod
-        def update(cls, username: str, api_key: str):
+        def update(cls, username: str, api_key: str) -> None:
             with mysql.connector.connect(**Sql.config_sql) as connection:
                 with connection.cursor() as cursor:
                     query = "UPDATE gw2 SET api_key = %s WHERE username = %s"
@@ -30,13 +30,12 @@ class Sql:
                     connection.commit()
 
         @classmethod
-        def select(cls, username: str):
+        def select(cls, username: str) -> str:
             with mysql.connector.connect(**Sql.config_sql) as connection:
                 with connection.cursor() as cursor:
                     query = "SELECT * FROM gw2 WHERE username = %s"
                     cursor.execute(query, [username])
                     rows = cursor.fetchall()
-                if rows:
-                    return Sql.encrypt_key.decrypt(rows[0][-1])
-                else:
+                if not rows:
                     return None
+                return Sql.encrypt_key.decrypt(rows[0][-1]).decode("utf-8")
