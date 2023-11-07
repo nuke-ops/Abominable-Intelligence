@@ -13,7 +13,7 @@ plugin = lightbulb.Plugin("Tabletop")
 @lightbulb.option("dice", "Amount of dice", int, default=1)
 @lightbulb.command("dice", "rolls the dice")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def dice(ctx: lightbulb.Context):
+async def dice(ctx: lightbulb.Context) -> None:
     # some pseudo error handling
     if ctx.options.dice > 500 or ctx.options.sides > 500:
         await error(
@@ -28,7 +28,7 @@ async def dice(ctx: lightbulb.Context):
     embed.set_author(
         name="Dice",
         icon="https://cdn.discordapp.com/attachments/732923500624347181/1132556441572606012/d20_reversed.png",
-    )
+    )  # TODO figure out how to use local images ~~eventually host them on the server~~
 
     embeds = []
     current_page = fields_counter = summary = page_summary = 0
