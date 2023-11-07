@@ -6,7 +6,7 @@ bot_dir = os.path.dirname(os.path.abspath(__file__))
 ###
 ### JSON management
 ###
-# Example usage of the usage
+# Example usage
 # add_element_to_json('config.json', ['person', 'age'], 30)
 # remove_element_from_json('config.json', ['person', 'address', 'city'])
 
