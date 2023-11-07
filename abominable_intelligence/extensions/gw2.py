@@ -101,12 +101,12 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
 @lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.Context) -> None:
-    if not _account_exists(ctx.options.api_key):
-        await error(ctx=ctx, title=verify, description="Invalid API")
-        return
     api_key = sql.select(ctx.member.nickname)
     if not api_key:
         await ctx.respond("API key not found")
+        return
+    if not _account_exists(api_key):
+        await error(ctx=ctx, title="verify", description="Invalid API")
         return
     output = ""
     player_guilds = _list_guilds(api_key)
