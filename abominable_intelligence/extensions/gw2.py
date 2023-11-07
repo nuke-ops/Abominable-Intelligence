@@ -12,8 +12,10 @@ sql = Sql().gw2()
 
 api_account = "https://api.guildwars2.com/v2/account"
 # someday I'll make it configurable, probably
-guild_nukeops = "C632B318-B4AB-EB11-81A8-E944283D67C1"
-guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"
+guild_nukeops = (
+    "C632B318-B4AB-EB11-81A8-E944283D67C1"  # TODO move all unique IDs to config
+)
+guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"  # TODO move all unique IDs to config
 
 
 ###
@@ -102,10 +104,14 @@ async def verify(ctx: lightbulb.Context):
     if api_key:
         output = ""
         if guild_nukeops in _list_guilds(api_key):
-            await ctx.member.add_role(1012181221704466513)
+            await ctx.member.add_role(
+                1012181221704466513
+            )  # TODO move all unique IDs to config
             output += "Added [NUKE] rank\n"
         if guild_afk in _list_guilds(api_key):
-            await ctx.member.add_role(1017008230444040212)
+            await ctx.member.add_role(
+                1017008230444040212
+            )  # TODO move all unique IDs to config
             output += "Added [AFK] rank\n"
         if output != "":
             await ctx.respond(output)

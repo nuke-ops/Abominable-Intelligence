@@ -28,7 +28,7 @@ async def dice(ctx: lightbulb.Context):
     embed.set_author(
         name="Dice",
         icon="https://cdn.discordapp.com/attachments/732923500624347181/1132556441572606012/d20_reversed.png",
-    )
+    )  # TODO figure out how to use local images ~~eventually host them on the server~~
 
     embeds = []
     current_page = fields_counter = summary = page_summary = 0
