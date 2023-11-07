@@ -77,7 +77,7 @@ async def help(ctx: lightbulb.Context) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.Context) -> None:
     if not _account_exists(ctx.options.api_key):
-        await error(ctx, "api_key", "Invalid API")
+        await error(ctx=ctx, title="api_key", description="Invalid API")
         return
     if sql.select(ctx.member.nickname):
         try:
@@ -101,6 +101,9 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
 @lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.Context) -> None:
+    if not _account_exists(ctx.options.api_key):
+        await error(ctx=ctx, title=verify, description="Invalid API")
+        return
     api_key = sql.select(ctx.member.nickname)
     if not api_key:
         await ctx.respond("API key not found")

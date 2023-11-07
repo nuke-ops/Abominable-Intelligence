@@ -15,7 +15,8 @@ def _list_branches() -> list:
     )
     branches = [branch.strip() for branch in find_branches]
     for x in ["origin/HEAD -> origin/master", ""]:
-        branches.remove(x)
+        if x in branches:
+            branches.remove(x)
     return branches
 
 
