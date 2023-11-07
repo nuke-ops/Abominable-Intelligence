@@ -1,4 +1,5 @@
 import json
+import logging
 
 import hikari
 import lightbulb
@@ -23,13 +24,13 @@ guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"  # TODO move all unique IDs t
 ###
 
 
-def _list_guilds(api_key):
+def _list_guilds(api_key) -> dict:
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return json.loads(response.text)["guilds"]
 
 
-def _account_exists(api_key):
+def _account_exists(api_key) -> bool:
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return True if response.status_code == 200 else False
@@ -43,14 +44,14 @@ def _account_exists(api_key):
 @plugin.command
 @lightbulb.command("gw2", "gw2 commands")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
-async def gw2(ctx: lightbulb.Context):
+async def gw2(ctx: lightbulb.Context) -> None:
     pass
 
 
 @gw2.child
 @lightbulb.command("help", "guide for gw2 commands")
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def help(ctx: lightbulb.Context):
+async def help(ctx: lightbulb.Context) -> None:
     embed = hikari.Embed(
         title="Help",
         description="**Gw2 API documentation**: https://wiki.guildwars2.com/wiki/API:Main\
@@ -76,49 +77,55 @@ async def help(ctx: lightbulb.Context):
 @lightbulb.option("api_key", "API key", str, required=True)
 @lightbulb.command("save-api-key", "Saves the API key")
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def save_api_key(ctx: lightbulb.Context):
+async def save_api_key(ctx: lightbulb.Context) -> None:
     if not _account_exists(ctx.options.api_key):
-        await error(ctx, "api_key", "Invalid API")
+        await error(ctx=ctx, title="api_key", description="Invalid API")
         return
-    if sql.select(ctx.member.nickname):
+    if sql.select(ctx.member.username):
         try:
             await ctx.respond("User already in database, overwriting...")
-            sql.update(ctx.options.api_key, ctx.member.nickname)
+            sql.update(ctx.options.api_key, ctx.member.username)
             await ctx.respond("API saved successfully")
             return
         except Exception as e:
             await ctx.respond("Database Error, most likely")
+            logging.warning(e)
             return
     try:
-        sql.insert(ctx.member.nickname, ctx.options.api_key)
+        sql.insert(ctx.member.username, ctx.options.api_key)
         await ctx.respond("API saved successfully")
-    except:
+    except Exception as e:
         await ctx.respond("Database Error, most likely")
+        logging.warning(e)
 
 
 @gw2.child
 @lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def verify(ctx: lightbulb.Context):
-    api_key = sql.select(ctx.member.nickname).decode("utf-8")
-    if api_key:
-        output = ""
-        if guild_nukeops in _list_guilds(api_key):
-            await ctx.member.add_role(
-                1012181221704466513
-            )  # TODO move all unique IDs to config
-            output += "Added [NUKE] rank\n"
-        if guild_afk in _list_guilds(api_key):
-            await ctx.member.add_role(
-                1017008230444040212
-            )  # TODO move all unique IDs to config
-            output += "Added [AFK] rank\n"
-        if output != "":
-            await ctx.respond(output)
-        else:
-            await ctx.respond("Guilds not found, none of ranks were asigned")
-    else:
-        await ctx.respond("API key not found")
+async def verify(ctx: lightbulb.Context) -> None:
+    api_key = sql.select(ctx.member.username)
+    if not api_key:
+        error(ctx=ctx, title="verify", description="API key not found")
+        return
+    if not _account_exists(api_key):
+        await error(ctx=ctx, title="verify", description="Invalid API")
+        return
+
+    output = ""
+    if guild_nukeops in _list_guilds(api_key):
+        await ctx.member.add_role(
+            1012181221704466513
+        )  # TODO move all unique IDs to config
+        output += "Added [NUKE] rank\n"
+    if guild_afk in _list_guilds(api_key):
+        await ctx.member.add_role(
+            1017008230444040212
+        )  # TODO move all unique IDs to config
+        output += "Added [AFK] rank\n"
+    if output == "":
+        await ctx.respond("Guilds not found, none of ranks were asigned")
+        return
+    await ctx.respond(output)
 
 
 def load(bot):
