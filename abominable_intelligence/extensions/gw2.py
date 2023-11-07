@@ -101,7 +101,7 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
 @lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.Context) -> None:
-    api_key = sql.select(ctx.member.nickname)
+    api_key = sql.select(ctx.member.username)
     if not api_key:
         await ctx.respond("API key not found")
         return

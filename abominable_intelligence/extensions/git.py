@@ -13,10 +13,11 @@ def _list_branches() -> list:
     find_branches = (
         subprocess.check_output("git branch -r".split()).decode().split("\n")
     )
-    branches = [branch.strip() for branch in find_branches]
-    for x in ["origin/HEAD -> origin/master", ""]:
-        if x in branches:
-            branches.remove(x)
+    branches = [
+        branch.strip().replace("origin/", "")
+        for branch in find_branches
+        if branch and "HEAD ->" not in branch
+    ]
     return branches
 
 
