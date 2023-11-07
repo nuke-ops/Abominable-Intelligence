@@ -1,4 +1,6 @@
 {
-    "role_id_administration": null,
-    "logs_channel": null
+  "ai": {
+    "host": "localhost",
+    "port": 11434
+  }
 }
