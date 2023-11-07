@@ -73,13 +73,14 @@ async def pull(ctx: lightbulb.Context) -> None:
 async def reset(ctx: lightbulb.Context) -> None:
     message = await ctx.respond("Backing up the branch...")
     try:
-        message = await message.edit(f"Removing old backup")
-        remove_backup = subprocess.check_output(
-            ["git", "branch", "--delete", "backup-master"]
-        ).decode("ascii")
-        message = await message.edit(f"{remove_backup}")
-        backup = subprocess.check_output("git branch backup-master".split()).decode()
-        message = await message.edit("Old branch backed up")
+        if "local-backup" in _list_branches():
+            message = await message.edit(f"Removing old backup")
+            remove_backup = subprocess.check_output(
+                "git branch --delete local-backup".split()
+            ).decode()
+            message = await message.edit(f"{remove_backup}")
+        backup = subprocess.check_output("git branch local-backup".split()).decode()
+        message = await message.edit(f"{backup}\nOld branch backed up")
     except Exception as e:
         await ctx.respond("Backup failed")
 
