@@ -10,7 +10,9 @@ plugin = lightbulb.Plugin("git")
 
 
 def _list_branches() -> list:
-    find_branches = subprocess.check_output("git branch -r").decode().split("\n")
+    find_branches = (
+        subprocess.check_output("git branch -r".split()).decode().split("\n")
+    )
     branches = [branch.strip() for branch in find_branches]
     for x in ["origin/HEAD -> origin/master", ""]:
         branches.remove(x)
