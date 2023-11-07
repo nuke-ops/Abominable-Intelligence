@@ -79,10 +79,10 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
     if not _account_exists(ctx.options.api_key):
         await error(ctx=ctx, title="api_key", description="Invalid API")
         return
-    if sql.select(ctx.member.nickname):
+    if sql.select(ctx.member.username):
         try:
             await ctx.respond("User already in database, overwriting...")
-            sql.update(ctx.options.api_key, ctx.member.nickname)
+            sql.update(ctx.options.api_key, ctx.member.username)
             await ctx.respond("API saved successfully")
             return
         except Exception as e:
@@ -90,7 +90,7 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
             logging.warning(e)
             return
     try:
-        sql.insert(ctx.member.nickname, ctx.options.api_key)
+        sql.insert(ctx.member.username, ctx.options.api_key)
         await ctx.respond("API saved successfully")
     except Exception as e:
         await ctx.respond("Database Error, most likely")
