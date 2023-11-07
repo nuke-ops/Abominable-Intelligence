@@ -5,10 +5,9 @@ from data_manager import config_sql
 
 class Sql:
     config_sql = config_sql()
-    encrypt_key = (
-        Fernet(config_sql["encrypt_key"]) if config_sql["encrypt_key"] != None else None
-    )
-    config_sql.pop("encrypt_key")
+    if config_sql["encrypt_key"]:
+        encrypt_key = Fernet(config_sql["encrypt_key"])
+        config_sql.pop("encrypt_key")
 
     class gw2:
         @classmethod
