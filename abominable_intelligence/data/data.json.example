@@ -2,7 +2,7 @@
     "ai": {
         "host": "localhost",
         "port": 11434,
-        "model": "codellama:13b-instruct-q4_1",
+        "model": "llama2",
         "temperature": "0.6"
     }
 }

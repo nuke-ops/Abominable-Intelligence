@@ -70,7 +70,14 @@ def data() -> dict:
             return json.loads(conf.read())
     except FileNotFoundError:
         print("data file not found")
-        return {"ai": {"host": "localhost", "port": "11434"}}
+        return {
+            "ai": {
+                "host": "localhost",
+                "port": "11434",
+                "model": "llama2",
+                "temperature": "0.2",
+            }
+        }
 
 
 def config_sql() -> dict:

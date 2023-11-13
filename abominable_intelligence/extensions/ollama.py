@@ -17,7 +17,7 @@ class SettingsModal(miru.Modal):
     port = miru.TextInput(label="port", placeholder="11434", value=settings["port"])
     model = miru.TextInput(
         label="model",
-        placeholder="codellama:13b-instruct-q4_1",
+        placeholder="llama2",
         value=settings["model"],
     )
     temperature = miru.TextInput(
@@ -98,7 +98,7 @@ def call(prompt) -> dict:
     config = data_manager.data()["ai"]
     address = f"http://{config['host']}:{config['port']}/api/generate"
     data = {
-        "model": "codellama:13b-instruct-q4_1",
+        "model": "llama2",
         "prompt": prompt,
         "options": {
             "temperature": 0.6,
