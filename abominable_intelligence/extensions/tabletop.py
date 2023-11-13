@@ -9,21 +9,18 @@ plugin = lightbulb.Plugin("Tabletop")
 
 
 @plugin.command
-@lightbulb.option("sides", "Amount of sides for each dice", int, default=20)
-@lightbulb.option("dice", "Amount of dice", int, default=1)
+@lightbulb.option(
+    "sides",
+    "Amount of sides for each dice",
+    int,
+    default=20,
+    min_value=1,
+    max_value=500,
+)
+@lightbulb.option("dice", "Amount of dice", int, default=1, min_value=1, max_value=500)
 @lightbulb.command("dice", "rolls the dice")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def dice(ctx: lightbulb.Context) -> None:
-    # some pseudo error handling
-    if ctx.options.dice > 500 or ctx.options.sides > 500:
-        await error(
-            ctx=ctx, title="Dice", description="values can't be bigger than 500"
-        )
-        return
-    elif ctx.options.dice < 1 or ctx.options.sides < 1:
-        await error(ctx=ctx, title="Dice", description="values must be bigger than 0")
-        return
-
+async def dice(ctx: lightbulb.SlashContext) -> None:
     embed = hikari.Embed(color=hikari.Color.of(0x00FF00))
     embed.set_author(
         name="Dice",
@@ -70,35 +67,33 @@ async def dice(ctx: lightbulb.Context) -> None:
         description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Summary**: **{summary}**"
         embeds[x].description = description
 
-    # figuring this out gave me more headache then it should probably.
-    # anyway, I can die in piece now, I don't care if this is the correct way.
     class DicePaginator(miru.View):
         def __init__(self, embeds):
-            super().__init__(timeout=300)
+            super().__init__(timeout=120)
             self.embeds = embeds
             self.current_page = 0
 
         @miru.button(label="|<", style=hikari.ButtonStyle.SUCCESS)
-        async def first_page(self, button: miru.Button, ctx: miru.Context):
+        async def first_page(self, button: miru.Button, ctx: miru.ViewContext):
             self.current_page = 0
             await self.update_page(ctx)
 
         @miru.button(label="<", style=hikari.ButtonStyle.PRIMARY)
-        async def previous_page(self, button: miru.Button, ctx: miru.Context):
+        async def previous_page(self, button: miru.Button, ctx: miru.ViewContext):
             self.current_page -= 1
             if self.current_page < 0:
                 self.current_page = len(self.embeds) - 1
             await self.update_page(ctx)
 
         @miru.button(label=">", style=hikari.ButtonStyle.PRIMARY)
-        async def next_page(self, button: miru.Button, ctx: miru.Context):
+        async def next_page(self, button: miru.Button, ctx: miru.ViewContext):
             self.current_page += 1
             if self.current_page >= len(self.embeds):
                 self.current_page = 0
             await self.update_page(ctx)
 
         @miru.button(label=">|", style=hikari.ButtonStyle.SUCCESS)
-        async def last_page(self, button: miru.Button, ctx: miru.Context):
+        async def last_page(self, button: miru.Button, ctx: miru.ViewContext):
             self.current_page = len(self.embeds) - 1
             await self.update_page(ctx)
 
@@ -108,10 +103,10 @@ async def dice(ctx: lightbulb.Context) -> None:
             else:
                 await ctx.edit_response(embed=self.embeds[0])
 
-        async def on_timeout(self):
+        async def on_timeout(self) -> None:
             for button in self.children:
                 button.disabled = True
-            await self.message.edit(components=self.build())
+            await self.message.edit(components=self)
 
     if sum_pages <= 1:
         await ctx.respond(embeds[0])

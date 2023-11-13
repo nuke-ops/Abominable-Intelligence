@@ -4,41 +4,44 @@ import logging
 import hikari
 import lightbulb
 import requests
-from extensions.core import error
+from extensions.core import error, success
 from extensions.MySQL import Sql
 
 plugin = lightbulb.Plugin("gw2")
 
 sql = Sql().gw2()
 
-api_account = "https://api.guildwars2.com/v2/account"
-# someday I'll make it configurable, probably
-guild_nukeops = (
-    "C632B318-B4AB-EB11-81A8-E944283D67C1"  # TODO move all unique IDs to config
-)
-guild_afk = "5A3B8707-912E-ED11-84B0-06B485C7CFFE"  # TODO move all unique IDs to config
+api_account = "https://api.guildwars2.com/v2/account/"
+api_guild = "https://api.guildwars2.com/v2/guild/"
+
+# TODO move all unique IDs to config
+guilds = {
+    "nukeops": {
+        "id": "C632B318-B4AB-EB11-81A8-E944283D67C1",
+        "discord_role": "1012181221704466513",
+    },
+    "afk": {
+        "id": "5A3B8707-912E-ED11-84B0-06B485C7CFFE",
+        "discord_role": "1017008230444040212",
+    },
+}
 
 
-###
-### internal functions
-###
-
-
-def _list_guilds(api_key) -> dict:
+def _list_guilds(api_key) -> list:
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return json.loads(response.text)["guilds"]
+
+
+def _get_guild_tag(guild_id) -> str:
+    response = requests.get(api_guild + guild_id)
+    return json.loads(response.text)["tag"]
 
 
 def _account_exists(api_key) -> bool:
     headers = {"Authorization": "Bearer " + api_key}
     response = requests.get(api_account, headers=headers)
     return True if response.status_code == 200 else False
-
-
-###
-### commands
-###
 
 
 @plugin.command
@@ -49,35 +52,10 @@ async def gw2(ctx: lightbulb.Context) -> None:
 
 
 @gw2.child
-@lightbulb.command("help", "guide for gw2 commands")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-async def help(ctx: lightbulb.Context) -> None:
-    embed = hikari.Embed(
-        title="Help",
-        description="**Gw2 API documentation**: https://wiki.guildwars2.com/wiki/API:Main\
-        \n**Source code of the module**: https://github.com/maksxpl/Abominable-Intelligence/blob/main/abominable_intelligence/extensions/gw2.py",
-        color=hikari.Color.of(0xE0FFFF),
-    )
-    embed.add_field(
-        name="/gw2 save-api-key [api_key]",
-        value="Saves the api key\
-        \nGet the key from https://account.arena.net/applications",
-        inline=False,
-    )
-    embed.add_field(
-        name="/gw2 verify",
-        value="Assigns ranks based on your in-game guilds\
-        \nRequries a stored API key with access to at least the Account API",
-        inline=False,
-    )
-    await ctx.respond(embed=embed)
-
-
-@gw2.child
 @lightbulb.option("api_key", "API key", str, required=True)
-@lightbulb.command("save-api-key", "Saves the API key")
+@lightbulb.command("save-api-key", "Saves the API key", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def save_api_key(ctx: lightbulb.Context) -> None:
+async def save_api_key(ctx: lightbulb.SlashContext) -> None:
     if not _account_exists(ctx.options.api_key):
         await error(ctx=ctx, title="api_key", description="Invalid API")
         return
@@ -85,7 +63,7 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
         try:
             await ctx.respond("User already in database, overwriting...")
             sql.update(ctx.options.api_key, ctx.member.username)
-            await ctx.respond("API saved successfully")
+            await success(ctx, "save-api-key", "API saved successfully")
             return
         except Exception as e:
             await ctx.respond("Database Error, most likely")
@@ -100,32 +78,37 @@ async def save_api_key(ctx: lightbulb.Context) -> None:
 
 
 @gw2.child
-@lightbulb.command("verify", "Assigns ranks based on your in-game guilds")
+@lightbulb.command(
+    "verify", "Assigns ranks based on your in-game guilds", ephemeral=True
+)
 @lightbulb.implements(lightbulb.SlashSubCommand)
-async def verify(ctx: lightbulb.Context) -> None:
+async def verify(ctx: lightbulb.SlashContext) -> None:
     api_key = sql.select(ctx.member.username)
     if not api_key:
-        error(ctx=ctx, title="verify", description="API key not found")
+        await error(ctx=ctx, title="verify", description="API key not found")
         return
     if not _account_exists(api_key):
         await error(ctx=ctx, title="verify", description="Invalid API")
         return
 
+    user_guilds = _list_guilds(api_key)
     output = ""
-    if guild_nukeops in _list_guilds(api_key):
-        await ctx.member.add_role(
-            1012181221704466513
-        )  # TODO move all unique IDs to config
-        output += "Added [NUKE] rank\n"
-    if guild_afk in _list_guilds(api_key):
-        await ctx.member.add_role(
-            1017008230444040212
-        )  # TODO move all unique IDs to config
-        output += "Added [AFK] rank\n"
+    for guild in guilds:
+        guild_id = guilds[guild]["id"]
+        if guild_id in user_guilds:
+            guild_role = guilds[guild]["discord_role"]
+            guild_tag = _get_guild_tag(guild_id)
+            await ctx.member.add_role(guild_role)
+            output += f"Added [{guild_tag}] rank\n"
     if output == "":
-        await ctx.respond("Guilds not found, none of ranks were asigned")
+        await error(
+            ctx=ctx,
+            title="verify",
+            description="Guilds not found, none of ranks were asigned",
+        )
         return
-    await ctx.respond(output)
+    # await ctx.respond(output)
+    await success(ctx, "verify", output)
 
 
 def load(bot):

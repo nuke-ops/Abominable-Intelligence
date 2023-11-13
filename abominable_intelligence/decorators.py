@@ -1,4 +1,7 @@
 import functools
+
+import hikari
+import lightbulb
 from data_manager import config
 
 config = config()
@@ -6,13 +9,13 @@ config = config()
 
 def administration_only(func):
     @functools.wraps(func)
-    async def wrapper(ctx, *args, **kwargs) -> None:
-        admin_role_id = config["role_id_administration"]
-        member_roles = [role.id for role in ctx.member.get_roles()]
-        member_is_owner = ctx.author.id == config["owner_id"]
+    async def wrapper(ctx: lightbulb.Context, *args, **kwargs) -> None:
+        from extensions.core import is_admin
 
-        if admin_role_id in member_roles or member_is_owner:
+        if await is_admin(ctx):
             return await func(ctx, *args, **kwargs)
-        await ctx.respond("You don't have access to that command")
+        await ctx.respond(
+            "You don't have access to this command", flags=hikari.MessageFlag.EPHEMERAL
+        )
 
     return wrapper

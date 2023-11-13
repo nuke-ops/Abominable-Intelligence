@@ -4,9 +4,11 @@ import traceback
 
 import hikari
 import lightbulb
+from data_manager import config
 from decorators import administration_only
 
 plugin = lightbulb.Plugin("Core")
+config = config()
 
 
 async def error(
@@ -18,12 +20,27 @@ async def error(
     await ctx.respond(
         embed=hikari.Embed(
             title=title if title else "Error",
-            description=f"{description}\n**Error**: ```{error}```"
+            description=f"```{description}```\n**Error**: ```{error}```"
             if error
             else description,
             color=hikari.Color.of(0xFF0000),
         )
     )
+
+
+async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
+    await ctx.respond(
+        embed=hikari.Embed(
+            title=title, description=description, color=hikari.Color.of(0xAAFF00)
+        )
+    )
+
+
+async def is_admin(ctx: lightbulb.Context):
+    admin_role_id = config["role_id_administration"]
+    member_roles = [role.id for role in ctx.member.get_roles()]
+    member_is_owner = bool(ctx.author.id == config["owner_id"])
+    return bool(member_is_owner or admin_role_id in member_roles)
 
 
 @plugin.command
