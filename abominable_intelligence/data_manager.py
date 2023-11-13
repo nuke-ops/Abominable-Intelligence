@@ -71,6 +71,7 @@ def data() -> dict:
     except FileNotFoundError:
         print("data file not found")
         return {
+            "core": {"role_id_administration": None},
             "sql": {"encrypt_key": None},
             "ai": {
                 "host": "localhost",
