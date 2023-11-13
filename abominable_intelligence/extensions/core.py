@@ -4,11 +4,13 @@ import traceback
 
 import hikari
 import lightbulb
-from data_manager import config
+import miru
+import data_manager
 from decorators import administration_only
 
 plugin = lightbulb.Plugin("Core")
-config = config()
+config = data_manager.config()
+data = data_manager.data()
 
 
 async def error(
@@ -37,7 +39,7 @@ async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
 
 
 async def is_admin(ctx: lightbulb.Context):
-    admin_role_id = config["role_id_administration"]
+    admin_role_id = data["core"]["role_id_administration"]
     member_roles = [role.id for role in ctx.member.get_roles()]
     member_is_owner = bool(ctx.author.id == config["owner_id"])
     return bool(member_is_owner or admin_role_id in member_roles)
@@ -59,6 +61,42 @@ async def restart(ctx: lightbulb.Context):
     except Exception:
         await ctx.respond("Restart failed")
         traceback.print_exc()
+
+
+class CoreSettingsModal(miru.Modal):
+    settings = data["core"]
+    role_id_administration = miru.TextInput(
+        label="administration rank", value=settings["role_id_administration"]
+    )
+
+    async def callback(self, ctx: miru.ModalContext) -> None:
+        if self.role_id_administration.value:
+            try:
+                data_manager.add_element_to_json(
+                    "data.json",
+                    ["core", "role_id_administration"],
+                    self.role_id_administration.value,
+                )
+                await ctx.respond("Settings saved!", flags=hikari.MessageFlag.EPHEMERAL)
+                return
+            except:
+                await ctx.respond(
+                    "Something went wrong", flags=hikari.MessageFlag.EPHEMERAL
+                )
+                return
+        await ctx.respond(
+            "All fields must be filled", flags=hikari.MessageFlag.EPHEMERAL
+        )
+
+
+@plugin.command
+@lightbulb.command("settings", "Bot settings")
+@lightbulb.implements(lightbulb.SlashCommand)
+@administration_only
+async def coreSettings(ctx: lightbulb.SlashContext) -> None:
+    modal = CoreSettingsModal("Bot Settings")
+    await modal.send(ctx.interaction)
+    await modal.wait()
 
 
 def load(bot):

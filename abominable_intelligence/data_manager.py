@@ -71,20 +71,11 @@ def data() -> dict:
     except FileNotFoundError:
         print("data file not found")
         return {
+            "sql": {"encrypt_key": None},
             "ai": {
                 "host": "localhost",
                 "port": "11434",
                 "model": "llama2",
                 "temperature": "0.2",
-            }
+            },
         }
-
-
-def config_sql() -> dict:
-    try:
-        config_file = os.path.join(bot_dir + "/data", "sql.json")
-        with open(config_file) as conf:
-            return json.loads(conf.read())
-    except FileNotFoundError:
-        print("config_sql file not found")
-        return {"encrypt_key": None}
