@@ -42,6 +42,8 @@ if __name__ == "__main__":
     bot.load_extensions("extensions.tabletop")
     bot.load_extensions("extensions.gw2")
 
+    bot.load_extensions("extensions.ollama")
+
     if os.path.exists(bot_dir + "/extensions/test.py"):
         bot.load_extensions("extensions.test")
 
