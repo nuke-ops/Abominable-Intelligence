@@ -1,6 +1,8 @@
 import json
 import logging
 
+import hikari
+
 import data_manager
 import lightbulb
 import miru
@@ -11,7 +13,7 @@ from extensions.core import error
 plugin = lightbulb.Plugin("ollama")
 
 
-class SettingsModal(miru.Modal):
+class OllamaSettingsModal(miru.Modal):
     settings = data_manager.data()["ai"]
     host = miru.TextInput(label="host", placeholder="localhost", value=settings["host"])
     port = miru.TextInput(label="port", placeholder="11434", value=settings["port"])
@@ -44,12 +46,16 @@ class SettingsModal(miru.Modal):
                 data_manager.add_element_to_json(
                     "data.json", ["ai", "temperature"], self.temperature.value
                 )
-                await ctx.respond("Settings saved!")
+                await ctx.respond("Settings saved!", flags=hikari.MessageFlag.EPHEMERAL)
                 return
             except:
-                await ctx.respond("Something went wrong")
+                await ctx.respond(
+                    "Something went wrong", flags=hikari.MessageFlag.EPHEMERAL
+                )
                 return
-        await ctx.respond("All fields must be filled")
+        await ctx.respond(
+            "All fields must be filled", flags=hikari.MessageFlag.EPHEMERAL
+        )
 
 
 @plugin.command
@@ -60,11 +66,11 @@ async def ai(ctx: lightbulb.Context) -> None:
 
 
 @ai.child
-@lightbulb.command("settings", "ollama settings menu")
+@lightbulb.command("settings", "ollama settings")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 @administration_only
-async def settings(ctx: lightbulb.SlashContext) -> None:
-    modal = SettingsModal("Ollama Settings")
+async def ollamaSettings(ctx: lightbulb.SlashContext) -> None:
+    modal = OllamaSettingsModal("Ollama Settings")
     await modal.send(ctx.interaction)
     await modal.wait()
 
@@ -97,15 +103,15 @@ Question:
 def call(prompt) -> dict:
     config = data_manager.data()["ai"]
     address = f"http://{config['host']}:{config['port']}/api/generate"
-    data = {
-        "model": "llama2",
+    payload = {
+        "model": config["model"],
         "prompt": prompt,
         "options": {
             "temperature": 0.6,
         },
     }
     try:
-        r = requests.post(address, json=data)
+        r = requests.post(address, json=payload)
     except requests.exceptions.RequestException as e:
         logging.warning(e)
         return
