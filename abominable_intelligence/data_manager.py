@@ -81,4 +81,5 @@ def data() -> dict:
                 "model": "llama2",
                 "temperature": "0.2",
             },
+            "gw2": {"guilds": {}},
         }
