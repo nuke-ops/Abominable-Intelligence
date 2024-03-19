@@ -1,9 +1,9 @@
 import json
 import logging
-
-import hikari
+from typing import Generator
 
 import data_manager
+import hikari
 import lightbulb
 import miru
 import requests
@@ -11,6 +11,39 @@ from decorators import administration_only
 from extensions.core import error
 
 plugin = lightbulb.Plugin("ollama")
+
+
+def _call(prompt) -> Generator[bytes, None, None]:
+    config = data_manager.data()["ai"]
+    address = f"http://{config['host']}:{config['port']}/api/generate"
+    payload = {
+        "model": config["model"],
+        "prompt": prompt,
+        "options": {
+            "temperature": 0.6,
+        },
+    }
+    try:
+        r = requests.post(address, json=payload)
+    except requests.exceptions.RequestException as e:
+        logging.warning(e)
+        return
+
+    for line in r.iter_lines(decode_unicode=True):
+        if line.strip():
+            yield json.loads(line)
+
+
+def _buffered_call(prompt) -> Generator[tuple[str, dict], None, None]:
+    buffer = ""
+    for part in _call(prompt):
+        if part.get("done"):
+            yield buffer, part
+            break
+        buffer += part["response"]
+        if len(buffer) >= 32:
+            yield buffer, part
+            buffer = ""
 
 
 class OllamaSettingsModal(miru.Modal):
@@ -84,54 +117,21 @@ async def ollamaSettings(ctx: lightbulb.SlashContext) -> None:
 async def ai_prompt(ctx: lightbulb.Context) -> None:
     response_content = ""
     x = 0
-    template = """Answer the question at the end by following these rules:
+    template = """Answer the prompt by following these rules:
 1. Keep your responses under 2000 characters.
 2. If you don't know the answer, just say that you don't know, try to not make up an answer.
-3. surround everything outside code blocks with double apostrophes (``)
-Question:
+3. Use Discord markdown syntax, eg. if it's code block, surround it with triple apostrophes and add the code language on the start eg. "```py"
+The prompt:
 """
     async with ctx.bot.rest.trigger_typing(ctx.channel_id):
         message = await ctx.respond(f"> {ctx.options.prompt}")
-        for buffer, part in buffered_call(template + ctx.options.prompt):
+        for buffer, part in _buffered_call(template + ctx.options.prompt):
             x += 1
             if x > 5:
                 await ctx.bot.rest.trigger_typing(ctx.channel_id)
                 x = 0
             response_content += buffer
             await message.edit(f"> {ctx.options.prompt} \n\n{response_content}")
-
-
-def call(prompt) -> dict:
-    config = data_manager.data()["ai"]
-    address = f"http://{config['host']}:{config['port']}/api/generate"
-    payload = {
-        "model": config["model"],
-        "prompt": prompt,
-        "options": {
-            "temperature": 0.6,
-        },
-    }
-    try:
-        r = requests.post(address, json=payload)
-    except requests.exceptions.RequestException as e:
-        logging.warning(e)
-        return
-
-    for line in r.iter_lines(decode_unicode=True):
-        if line.strip():
-            yield json.loads(line)
-
-
-def buffered_call(prompt) -> dict:
-    buffer = ""
-    for part in call(prompt):
-        if part.get("done"):
-            yield buffer, part
-            break
-        buffer += part["response"]
-        if len(buffer) >= 32:
-            yield buffer, part
-            buffer = ""
 
 
 def load(bot):

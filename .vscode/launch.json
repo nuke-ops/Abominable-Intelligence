@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: abominable_intelligence.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "abominable_intelligence/abominable_intelligence.py",
+            "console": "integratedTerminal",
+            "args": "-O"
+        }
+    ]
+}
