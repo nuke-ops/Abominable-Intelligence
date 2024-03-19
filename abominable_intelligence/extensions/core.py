@@ -5,12 +5,12 @@ import traceback
 import hikari
 import lightbulb
 import miru
-import data_manager
+from data_manager import config, data, add_element_to_json
 from decorators import administration_only
 
 plugin = lightbulb.Plugin("Core")
-config = data_manager.config()
-data = data_manager.data()
+config = config()
+data = data()
 
 
 async def error(
@@ -22,9 +22,11 @@ async def error(
     await ctx.respond(
         embed=hikari.Embed(
             title=title if title else "Error",
-            description=f"```{description}```\n**Error**: ```{error}```"
-            if error
-            else description,
+            description=(
+                f"```{description}```\n**Error**: ```{error}```"
+                if error
+                else description
+            ),
             color=hikari.Color.of(0xFF0000),
         )
     )
@@ -41,7 +43,7 @@ async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
 async def is_admin(ctx: lightbulb.Context):
     admin_role_id = data["core"]["role_id_administration"]
     member_roles = [role.id for role in ctx.member.get_roles()]
-    member_is_owner = bool(ctx.author.id == config["owner_id"])
+    member_is_owner = bool(ctx.author.id == config["bot"]["owner_id"])
     return bool(member_is_owner or admin_role_id in member_roles)
 
 
@@ -72,7 +74,7 @@ class CoreSettingsModal(miru.Modal):
     async def callback(self, ctx: miru.ModalContext) -> None:
         if self.role_id_administration.value:
             try:
-                data_manager.add_element_to_json(
+                add_element_to_json(
                     "data.json",
                     ["core", "role_id_administration"],
                     self.role_id_administration.value,
@@ -95,8 +97,9 @@ class CoreSettingsModal(miru.Modal):
 @administration_only
 async def coreSettings(ctx: lightbulb.SlashContext) -> None:
     modal = CoreSettingsModal("Bot Settings")
-    await modal.send(ctx.interaction)
-    await modal.wait()
+    builder = modal.build_response(ctx.bot.d.miru)
+    await builder.create_modal_response(ctx.interaction)
+    ctx.bot.d.miru.start_modal(modal)
 
 
 def load(bot):

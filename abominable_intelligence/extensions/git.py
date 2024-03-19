@@ -83,21 +83,21 @@ async def _reset(ctx) -> None:
 
 class GitButtons(miru.View):
     @miru.button(label="Pull", style=hikari.ButtonStyle.PRIMARY)
-    async def pull_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def pull_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await _pull(ctx)
 
     @miru.button(label="Checkout", style=hikari.ButtonStyle.PRIMARY)
-    async def checkout_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def checkout_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         if not any(isinstance(child, miru.TextSelect) for child in self.children):
             self.add_item(SelectBranch())
             await ctx.message.edit(components=self)
 
     @miru.button(label="List branches", style=hikari.ButtonStyle.SUCCESS)
-    async def branches_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def branches_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await _branches(ctx)
 
     @miru.button(label="Hard reset", style=hikari.ButtonStyle.DANGER)
-    async def reset_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+    async def reset_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
         await _reset(ctx)
 
     async def on_timeout(self) -> None:
@@ -141,9 +141,8 @@ class SelectBranch(miru.TextSelect):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def git(ctx: lightbulb.SlashContext):
     view = GitButtons(timeout=120)
-    message = await ctx.respond(components=view)
-    await view.start(message)
-    await view.wait()
+    await ctx.respond(components=view)
+    ctx.app.d.miru.start_view(view)
 
 
 def load(bot):

@@ -56,10 +56,13 @@ def config() -> dict:
     except FileNotFoundError:
         print("config file not found")
         return {
-            "bot_token": os.environ.get("DISCORD_BOT_TOKEN"),
-            "owner_id": (),
-            "prefix": (),
-            "guild_id": (),
+            "bot": {
+                "token": os.environ.get("DISCORD_BOT_TOKEN"),
+                "owner_id": (),
+                "prefix": (),
+                "guild_id": (),
+            },
+            "sql": {"encrypt_key": None},
         }
 
 
@@ -72,11 +75,11 @@ def data() -> dict:
         print("data file not found")
         return {
             "core": {"role_id_administration": None},
-            "sql": {"encrypt_key": None},
             "ai": {
                 "host": "localhost",
                 "port": "11434",
                 "model": "llama2",
                 "temperature": "0.2",
             },
+            "gw2": {"guilds": {}},
         }

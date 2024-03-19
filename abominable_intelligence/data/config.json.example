@@ -1,6 +1,15 @@
 {
-    "bot_token": null,
-    "owner_id": null,
-    "guild_id": null,
-    "prefix": "!ai ",
+    "bot": {
+        "token": null,
+        "owner_id": null,
+        "guild_id": null,
+        "prefix": "!ai "
+    },
+    "sql": {
+        "encrypt_key": null,
+        "host": null,
+        "user": null,
+        "password": null,
+        "database": null
+    }
 }

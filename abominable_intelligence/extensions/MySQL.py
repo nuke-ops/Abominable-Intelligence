@@ -1,10 +1,10 @@
 import mysql.connector
 from cryptography.fernet import Fernet
-from data_manager import data
+from data_manager import config
 
 
 class Sql:
-    config = data()["sql"]
+    config = config()["sql"]
     if config["encrypt_key"]:
         encrypt_key = Fernet(config["encrypt_key"])
         config.pop("encrypt_key")

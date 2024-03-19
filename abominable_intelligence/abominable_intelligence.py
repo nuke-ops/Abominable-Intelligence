@@ -6,10 +6,10 @@ import miru
 from data_manager import bot_dir, config
 
 os.chdir(bot_dir)  # set bot's work directory
-config = config()
 
+config = config()["bot"]
 bot = lightbulb.BotApp(
-    token=config["bot_token"],
+    token=config["token"],
     prefix=config["prefix"],
     intents=hikari.Intents.ALL,
     owner_ids=config["owner_id"],
@@ -25,14 +25,7 @@ bot = lightbulb.BotApp(
     },
 )
 
-try:
-    miru.install(bot)
-except:
-    print(
-        "Miru is already loaded, apparently, I guess.\n\
-                    Also, fuck you miru."
-    )
-
+bot.d.miru = miru.Client(bot)
 
 if __name__ == "__main__":
     bot.load_extensions("extensions.core")

@@ -4,6 +4,7 @@ import hikari
 import lightbulb
 import miru
 from extensions.core import error
+from miru.ext import nav
 
 plugin = lightbulb.Plugin("Tabletop")
 
@@ -67,53 +68,20 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
         description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Summary**: **{summary}**"
         embeds[x].description = description
 
-    class DicePaginator(miru.View):
-        def __init__(self, embeds):
-            super().__init__(timeout=120)
-            self.embeds = embeds
-            self.current_page = 0
-
-        @miru.button(label="|<", style=hikari.ButtonStyle.SUCCESS)
-        async def first_page(self, button: miru.Button, ctx: miru.ViewContext):
-            self.current_page = 0
-            await self.update_page(ctx)
-
-        @miru.button(label="<", style=hikari.ButtonStyle.PRIMARY)
-        async def previous_page(self, button: miru.Button, ctx: miru.ViewContext):
-            self.current_page -= 1
-            if self.current_page < 0:
-                self.current_page = len(self.embeds) - 1
-            await self.update_page(ctx)
-
-        @miru.button(label=">", style=hikari.ButtonStyle.PRIMARY)
-        async def next_page(self, button: miru.Button, ctx: miru.ViewContext):
-            self.current_page += 1
-            if self.current_page >= len(self.embeds):
-                self.current_page = 0
-            await self.update_page(ctx)
-
-        @miru.button(label=">|", style=hikari.ButtonStyle.SUCCESS)
-        async def last_page(self, button: miru.Button, ctx: miru.ViewContext):
-            self.current_page = len(self.embeds) - 1
-            await self.update_page(ctx)
-
-        async def update_page(self, ctx: miru.Context):
-            if self.current_page < sum_pages:
-                await ctx.edit_response(embed=self.embeds[self.current_page])
-            else:
-                await ctx.edit_response(embed=self.embeds[0])
-
-        async def on_timeout(self) -> None:
-            for button in self.children:
-                button.disabled = True
-            await self.message.edit(components=self)
-
     if sum_pages <= 1:
         await ctx.respond(embeds[0])
     else:
-        paginator_view = DicePaginator(embeds)
-        message = await ctx.respond(embed=embeds[0], components=paginator_view.build())
-        await paginator_view.start(message)
+        items: list[nav.NavItem] = [
+            nav.FirstButton(label="|<", emoji=None),
+            nav.PrevButton(label="<", emoji=None),
+            nav.NextButton(label=">", emoji=None),
+            nav.LastButton(label=">|", emoji=None),
+        ]
+
+        navigator = nav.NavigatorView(pages=embeds, items=items)
+        builder = await navigator.build_response_async(ctx.bot.d.miru)
+        await builder.create_initial_response(ctx.interaction)
+        ctx.app.d.miru.start_view(navigator)
 
 
 def load(bot):
