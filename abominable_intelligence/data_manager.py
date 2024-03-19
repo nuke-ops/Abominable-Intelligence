@@ -57,7 +57,7 @@ def config() -> dict:
         print("config file not found")
         return {
             "bot": (),
-            "bot_token": os.environ.get("DISCORD_BOT_TOKEN"),
+            "token": os.environ.get("DISCORD_BOT_TOKEN"),
             "owner_id": (),
             "prefix": (),
             "guild_id": (),
