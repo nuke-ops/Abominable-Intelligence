@@ -56,7 +56,7 @@ def config() -> dict:
     except FileNotFoundError:
         print("config file not found")
         return {
-            "bot": (),
+            "bot": {},
             "token": os.environ.get("DISCORD_BOT_TOKEN"),
             "owner_id": (),
             "prefix": (),
