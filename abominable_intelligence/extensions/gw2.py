@@ -1,30 +1,21 @@
 import json
 import logging
 
-import hikari
 import lightbulb
 import requests
+from data_manager import data
 from extensions.core import error, success
 from extensions.MySQL import Sql
 
 plugin = lightbulb.Plugin("gw2")
 
 sql = Sql().gw2()
+data = data()["gw2"]
 
 api_account = "https://api.guildwars2.com/v2/account/"
 api_guild = "https://api.guildwars2.com/v2/guild/"
 
-# TODO move all unique IDs to config
-guilds = {
-    "nukeops": {
-        "id": "C632B318-B4AB-EB11-81A8-E944283D67C1",
-        "discord_role": "1012181221704466513",
-    },
-    "afk": {
-        "id": "5A3B8707-912E-ED11-84B0-06B485C7CFFE",
-        "discord_role": "1017008230444040212",
-    },
-}
+guilds = data["guilds"]
 
 
 def _list_guilds(api_key) -> list:
@@ -107,7 +98,6 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
             description="Guilds not found, none of ranks were asigned",
         )
         return
-    # await ctx.respond(output)
     await success(ctx, "verify", output)
 
 

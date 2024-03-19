@@ -71,8 +71,9 @@ async def ai(ctx: lightbulb.Context) -> None:
 @administration_only
 async def ollamaSettings(ctx: lightbulb.SlashContext) -> None:
     modal = OllamaSettingsModal("Ollama Settings")
-    await modal.send(ctx.interaction)
-    await modal.wait()
+    builder = modal.build_response(ctx.bot.d.miru)
+    await builder.create_modal_response(ctx.interaction)
+    ctx.bot.d.miru.start_modal(modal)
 
 
 @ai.child

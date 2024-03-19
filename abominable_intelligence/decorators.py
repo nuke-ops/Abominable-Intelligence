@@ -4,7 +4,7 @@ import hikari
 import lightbulb
 from data_manager import config
 
-config = config()
+config = config()["bot"]
 
 
 def administration_only(func):

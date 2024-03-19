@@ -1,8 +1,14 @@
 {
+    "core": {
+        "role_id_administration": "668245500612444205"
+    },
     "ai": {
         "host": "localhost",
         "port": 11434,
         "model": "llama2",
         "temperature": "0.6"
+    },
+    "gw2": {
+        "guilds": {}
     }
 }
