@@ -4,7 +4,7 @@ import traceback
 import hikari
 import lightbulb
 import miru
-from extensions.core import is_admin, restart, error, success
+from extensions.core import error, is_admin, restart, success
 
 plugin = lightbulb.Plugin("git")
 
@@ -139,10 +139,12 @@ class SelectBranch(miru.TextSelect):
 @plugin.command
 @lightbulb.command("git", "panel with git commands")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def git(ctx: lightbulb.SlashContext):
+async def git(ctx: lightbulb.SlashContext) -> None:
     view = GitButtons(timeout=120)
-    await ctx.respond(components=view)
-    ctx.app.d.miru.start_view(view)
+    response = await ctx.respond(components=view)
+    message = await response
+    miru_client: miru.Client = ctx.app.d.miru
+    miru_client.start_view(view, bind_to=message)
 
 
 def load(bot):

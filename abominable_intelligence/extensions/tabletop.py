@@ -6,7 +6,7 @@ import miru
 from extensions.core import error
 from miru.ext import nav
 
-plugin = lightbulb.Plugin("Tabletop")
+plugin = lightbulb.Plugin("Tabletop", default_enabled_guilds=[])
 
 
 @plugin.command
@@ -62,10 +62,12 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
     # if last page wasn't fully filled, add remnant dice rolls
     if len(embed.fields) < max_fields_per_page:
         current_page += 1
-        embed.set_footer(f"Page: {current_page}/{sum_pages} | Summary: {page_summary}")
+        embed.set_footer(
+            f"Page: {current_page}/{sum_pages} | Total Summary: {page_summary}"
+        )
         embeds.append(embed)
     for x in range(len(embeds)):
-        description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Summary**: **{summary}**"
+        description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Page Summary**: **{summary}**"
         embeds[x].description = description
 
     if sum_pages <= 1:
@@ -78,7 +80,7 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
             nav.LastButton(label=">|", emoji=None),
         ]
 
-        navigator = nav.NavigatorView(pages=embeds, items=items)
+        navigator = nav.NavigatorView(pages=embeds, items=items, timeout=120)
         builder = await navigator.build_response_async(ctx.bot.d.miru)
         await builder.create_initial_response(ctx.interaction)
         ctx.app.d.miru.start_view(navigator)

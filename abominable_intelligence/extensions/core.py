@@ -8,9 +8,9 @@ import miru
 from data_manager import config, data, add_element_to_json
 from decorators import administration_only
 
-plugin = lightbulb.Plugin("Core")
-config = config()
+bot_config = config()["bot"]
 data = data()
+plugin = lightbulb.Plugin("Core")
 
 
 async def error(
@@ -43,7 +43,7 @@ async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
 async def is_admin(ctx: lightbulb.Context):
     admin_role_id = data["core"]["role_id_administration"]
     member_roles = [role.id for role in ctx.member.get_roles()]
-    member_is_owner = bool(ctx.author.id == config["bot"]["owner_id"])
+    member_is_owner = bool(ctx.author.id == bot_config["owner_id"])
     return bool(member_is_owner or admin_role_id in member_roles)
 
 
@@ -92,7 +92,7 @@ class CoreSettingsModal(miru.Modal):
 
 
 @plugin.command
-@lightbulb.command("settings", "Bot settings")
+@lightbulb.command("settings", "Bot settings", guilds=[bot_config["guild_id"]])
 @lightbulb.implements(lightbulb.SlashCommand)
 @administration_only
 async def coreSettings(ctx: lightbulb.SlashContext) -> None:

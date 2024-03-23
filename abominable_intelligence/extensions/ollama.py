@@ -9,15 +9,17 @@ import miru
 import requests
 from decorators import administration_only
 from extensions.core import error
+from data_manager import config, data
 
-plugin = lightbulb.Plugin("ollama")
+bot_config = config()["bot"]
+ollama_settings = data()["ai"]
+plugin = lightbulb.Plugin("ollama", default_enabled_guilds=[])
 
 
 def _call(prompt) -> Generator[bytes, None, None]:
-    config = data_manager.data()["ai"]
-    address = f"http://{config['host']}:{config['port']}/api/generate"
+    address = f"http://{ollama_settings['host']}:{ollama_settings['port']}/api/generate"
     payload = {
-        "model": config["model"],
+        "model": ollama_settings["model"],
         "prompt": prompt,
         "options": {
             "temperature": 0.6,
@@ -47,16 +49,19 @@ def _buffered_call(prompt) -> Generator[tuple[str, dict], None, None]:
 
 
 class OllamaSettingsModal(miru.Modal):
-    settings = data_manager.data()["ai"]
-    host = miru.TextInput(label="host", placeholder="localhost", value=settings["host"])
-    port = miru.TextInput(label="port", placeholder="11434", value=settings["port"])
+    host = miru.TextInput(
+        label="host", placeholder="localhost", value=ollama_settings["host"]
+    )
+    port = miru.TextInput(
+        label="port", placeholder="11434", value=ollama_settings["port"]
+    )
     model = miru.TextInput(
         label="model",
         placeholder="llama2",
-        value=settings["model"],
+        value=ollama_settings["model"],
     )
     temperature = miru.TextInput(
-        label="temperature", placeholder="0.6", value=settings["temperature"]
+        label="temperature", placeholder="0.6", value=ollama_settings["temperature"]
     )
 
     async def callback(self, ctx: miru.ModalContext) -> None:
@@ -99,7 +104,7 @@ async def ai(ctx: lightbulb.Context) -> None:
 
 
 @ai.child
-@lightbulb.command("settings", "ollama settings")
+@lightbulb.command("settings", "ollama settings", guilds=[bot_config["guild_id"]])
 @lightbulb.implements(lightbulb.SlashSubCommand)
 @administration_only
 async def ollamaSettings(ctx: lightbulb.SlashContext) -> None:
