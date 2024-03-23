@@ -7,13 +7,14 @@ from data_manager import bot_dir, config
 
 os.chdir(bot_dir)  # set bot's work directory
 
-config = config()["bot"]
+bot_config = config()["bot"]
+
 bot = lightbulb.BotApp(
-    token=config["token"],
-    prefix=config["prefix"],
+    token=bot_config["token"],
+    prefix=bot_config["prefix"],
     intents=hikari.Intents.ALL,
-    owner_ids=config["owner_id"],
-    default_enabled_guilds=config["guild_id"],
+    owner_ids=bot_config["owner_id"],
+    default_enabled_guilds=[bot_config["guild_id"]],
     logs={
         "version": 1,
         "incremental": True,
@@ -25,18 +26,24 @@ bot = lightbulb.BotApp(
     },
 )
 
+print(bot.default_enabled_guilds)
+
 bot.d.miru = miru.Client(bot)
 
 if __name__ == "__main__":
+    # core modules
     bot.load_extensions("extensions.core")
     bot.load_extensions("extensions.listeners")
 
-    bot.load_extensions("extensions.git")
+    # global modules
     bot.load_extensions("extensions.tabletop")
-    bot.load_extensions("extensions.gw2")
-
     bot.load_extensions("extensions.ollama")
 
+    # guild modules
+    bot.load_extensions("extensions.git")
+    bot.load_extensions("extensions.gw2")
+
+    # external modules
     if os.path.exists(bot_dir + "/extensions/test.py"):
         bot.load_extensions("extensions.test")
 
