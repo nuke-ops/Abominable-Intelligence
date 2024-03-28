@@ -3,14 +3,15 @@ import logging
 
 import lightbulb
 import requests
-from data_manager import data
+from data_manager import config, data
 from extensions.core import error, success
 from extensions.MySQL import Sql
 
-plugin = lightbulb.Plugin("gw2")
-
-sql = Sql().gw2()
+bot_config = config()["bot"]
 data = data()["gw2"]
+sql = Sql().gw2()
+
+plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
 
 api_account = "https://api.guildwars2.com/v2/account/"
 api_guild = "https://api.guildwars2.com/v2/guild/"
