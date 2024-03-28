@@ -69,9 +69,10 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
     for x in range(len(embeds)):
         description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Page Summary**: **{summary}**"
         embeds[x].description = description
-
+    # send embed if it's just a one page
     if sum_pages <= 1:
         await ctx.respond(embeds[0])
+    # send navigator if there's more pages
     else:
         items: list[nav.NavItem] = [
             nav.FirstButton(label="|<", emoji=None),
