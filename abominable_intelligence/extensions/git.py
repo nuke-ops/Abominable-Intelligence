@@ -28,8 +28,13 @@ async def _pull(ctx) -> None:
         await ctx.respond(pull)
         if "Already up to date" not in pull:
             await restart(ctx)
-    except Exception:
-        await ctx.respond("Pull failed")
+    except subprocess.CalledProcessError as e:
+        await ctx.respond("Pull failed due to conflicts or other errors.")
+        traceback.print_exc()
+    except Exception as e:
+        await ctx.respond(
+            "An unexpected error occurred while pulling from Git repository."
+        )
         traceback.print_exc()
 
 
@@ -142,7 +147,7 @@ class SelectBranch(miru.TextSelect):
 async def git(ctx: lightbulb.SlashContext) -> None:
     view = GitButtons(timeout=120)
     response = await ctx.respond(components=view)
-    message = await response
+    message = await response  # Convert ResponseProxy to Message
     miru_client: miru.Client = ctx.app.d.miru
     miru_client.start_view(view, bind_to=message)
 
