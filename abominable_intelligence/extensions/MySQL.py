@@ -39,6 +39,7 @@ class Sql:
                     return None
                 return Sql.encrypt_key.decrypt(rows[0][-1]).decode("utf-8")
 
+        @classmethod
         def select_all(cls) -> list:
             with mysql.connector.connect(**Sql.sql_config) as connection:
                 with connection.cursor() as cursor:

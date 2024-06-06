@@ -1,4 +1,3 @@
-import base64
 import os
 import json
 
@@ -63,9 +62,7 @@ def config() -> dict:
                 "prefix": (),
                 "guild_id": (),
             },
-            "sql": {
-                "encrypt_key": base64.urlsafe_b64encode(os.urandom(32)).decode("utf-8")
-            },
+            "sql": {"encrypt_key": None},
         }
 
 
