@@ -62,7 +62,7 @@ def config() -> dict:
                 "prefix": (),
                 "guild_id": (),
             },
-            "sql": {"encrypt_key": "example_key"},
+            "sql": {"encrypt_key": os.urandom(32)},
         }
 
 
