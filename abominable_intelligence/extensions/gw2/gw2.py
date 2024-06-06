@@ -89,7 +89,6 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
     "discord account",
     str,
     required=True,
-    choices=sql.select_all(),  # remove if there will be more than 25 users (won't happen)
 )
 @lightbulb.command("lookup", "checks game account name of the given discord user")
 @lightbulb.implements(lightbulb.SlashSubCommand)
