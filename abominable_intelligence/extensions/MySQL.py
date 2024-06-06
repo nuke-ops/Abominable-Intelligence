@@ -47,5 +47,4 @@ class Sql:
                     rows = cursor.fetchall()
                 if not rows:
                     return None
-                # return Sql.encrypt_key.decrypt(rows[0][0])
                 return [row[1] for row in rows]
