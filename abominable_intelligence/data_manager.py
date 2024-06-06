@@ -1,5 +1,7 @@
-import os
 import json
+import os
+
+from cryptography.fernet import Fernet
 
 bot_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -62,7 +64,7 @@ def config() -> dict:
                 "prefix": (),
                 "guild_id": (),
             },
-            "sql": {"encrypt_key": None},
+            "sql": {"encrypt_key": Fernet.generate_key()},
         }
 
 

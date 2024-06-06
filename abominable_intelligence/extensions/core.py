@@ -19,6 +19,7 @@ async def error(
     description: str = None,
     error: str = None,
 ) -> None:
+    """Send an embed with red border"""
     await ctx.respond(
         embed=hikari.Embed(
             title=title if title else "Error",
@@ -33,6 +34,7 @@ async def error(
 
 
 async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
+    """Send an embed with green border"""
     await ctx.respond(
         embed=hikari.Embed(
             title=title, description=description, color=hikari.Color.of(0xAAFF00)

@@ -1,79 +1,18 @@
-from datetime import timedelta
-import json
 import logging
 
 import lightbulb
-import requests
 from data_manager import config, data
 from extensions.core import administration_only, error, success
 from extensions.MySQL import Sql
 
+from .gw2api import Gw2API
+
 bot_config = config()["bot"]
 data = data()["gw2"]
 sql = Sql().gw2()
-
-plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
-
-
 guilds = data["guilds"]
 
-
-class Gw2API:
-    def __init__(self, api_key):
-        self.headers = {"Authorization": "Bearer " + api_key}
-        self.api_account = "https://api.guildwars2.com/v2/account/"
-        self.api_guild = "https://api.guildwars2.com/v2/guild/"
-        self.api_worlds = "https://api.guildwars2.com/v2/worlds"
-
-    def _convert_age(self, age_seconds: int) -> str:
-        return f"{age_seconds}s / {round(age_seconds/3600, 2)}h"
-
-    def _created(self, date: str) -> str:
-        return date.replace("T", " ").replace("Z", "")
-
-    def _convert_world(self, world_id: int) -> str:
-        world_data = requests.get(f"{self.api_worlds}?ids={world_id}").json()[0]
-        region = (
-            "EU"
-            if str(world_id)[0] == "2"
-            else ("NA" if str(world_id)[0] == "1" else None)
-        )
-        return f"{world_data.get('name', 'unknown')} ({region})"
-
-    def _convert_value(self, key, value):
-        if key == "age":
-            return self._convert_age(value)
-        elif key == "created":
-            return self._created(value)
-        elif key == "world":
-            return self._convert_world(value)
-        else:
-            return value
-
-    def list_guilds(self, api_key) -> list:
-        response = requests.get(self.api_account, headers=self.headers)
-        return json.loads(response.text)["guilds"]
-
-    def get_guild_tag(self, guild_id) -> str:
-        response = requests.get(self.api_guild + guild_id)
-        return json.loads(response.text)["tag"]
-
-    def account_exists(self, api_key) -> bool:
-        response = requests.get(self.api_account, headers=self.headers)
-        return True if response.status_code == 200 else False
-
-    def user_lookup(self) -> str:
-        account_info_json = requests.get(self.api_account, headers=self.headers).json()
-
-        exclude = ["guilds", "guild_leader", "commander", "daily_ap", "monthly_ap"]
-        account_info = "\n".join(
-            [
-                f"[2;31m{key}[0m: {self._convert_value(key, value)}"
-                for key, value in account_info_json.items()
-                if key not in exclude
-            ]
-        )
-        return f"```ansi\n{account_info}```"
+plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
 
 
 @plugin.command
@@ -89,7 +28,7 @@ async def gw2(ctx: lightbulb.Context) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.SlashContext) -> None:
     api_key = sql.select(ctx.options.user)
-    if not Gw2API(api_key).account_exists():
+    if not Gw2API.account_exists(api_key):
         await error(ctx=ctx, title="api_key", description="Invalid API")
         return
     if sql.select(ctx.member.username):
@@ -116,15 +55,15 @@ async def save_api_key(ctx: lightbulb.SlashContext) -> None:
 )
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def verify(ctx: lightbulb.SlashContext) -> None:
-    api_key = sql.select(ctx.member.user)
+    api_key = sql.select(ctx.member.username)
     if not api_key:
         await error(ctx=ctx, title="verify", description="API key not found")
         return
-    if not Gw2API(api_key).account_exists():
+    if not Gw2API.account_exists(api_key):
         await error(ctx=ctx, title="verify", description="Invalid API")
         return
 
-    user_guilds = Gw2API(api_key).list_guilds()
+    user_guilds = Gw2API.list_guilds(api_key)
     output = ""
     for guild in guilds:
         guild_id = guilds[guild]["id"]
@@ -150,13 +89,13 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
     "discord account",
     str,
     required=True,
-    choices=lambda: sql.select_all(),  # remove if there will be more than 25 users (won't happen)
+    choices=sql.select_all(),  # remove if there will be more than 25 users (won't happen)
 )
 @lightbulb.command("lookup", "checks game account name of the given discord user")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def lookup(ctx: lightbulb.SlashContext) -> None:
     api_key = sql.select(ctx.options.user)
-    await ctx.respond(Gw2API(api_key).user_lookup())
+    await ctx.respond(Gw2API.user_lookup(api_key))
 
 
 def load(bot):
