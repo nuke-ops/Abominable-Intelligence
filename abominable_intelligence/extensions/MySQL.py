@@ -38,3 +38,14 @@ class Sql:
                 if not rows:
                     return None
                 return Sql.encrypt_key.decrypt(rows[0][-1]).decode("utf-8")
+
+        def select_all(cls) -> list:
+            with mysql.connector.connect(**Sql.sql_config) as connection:
+                with connection.cursor() as cursor:
+                    query = "SELECT * FROM gw2"
+                    cursor.execute(query)
+                    rows = cursor.fetchall()
+                if not rows:
+                    return None
+                # return Sql.encrypt_key.decrypt(rows[0][0])
+                return [row[1] for row in rows]
