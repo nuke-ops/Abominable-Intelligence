@@ -9,7 +9,7 @@ class Sql:
         encrypt_key = Fernet(sql_config["encrypt_key"])
         sql_config.pop("encrypt_key")
 
-    class gw2:
+    class Gw2:
         @classmethod
         def insert(cls, username: str, api_key: str) -> None:
             with mysql.connector.connect(**Sql.sql_config) as connection:
@@ -29,7 +29,7 @@ class Sql:
                     connection.commit()
 
         @classmethod
-        def select(cls, username: str) -> str:
+        def select(cls, username: str) -> str | None:
             with mysql.connector.connect(**Sql.sql_config) as connection:
                 with connection.cursor() as cursor:
                     query = "SELECT * FROM gw2 WHERE username = %s"
@@ -40,7 +40,7 @@ class Sql:
                 return Sql.encrypt_key.decrypt(rows[0][-1]).decode("utf-8")
 
         @classmethod
-        def select_all(cls) -> list:
+        def select_all(cls) -> list | None:
             with mysql.connector.connect(**Sql.sql_config) as connection:
                 with connection.cursor() as cursor:
                     query = "SELECT * FROM gw2"

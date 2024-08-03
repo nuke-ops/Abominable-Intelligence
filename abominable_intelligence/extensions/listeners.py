@@ -14,7 +14,7 @@ async def on_ready(event: lightbulb.LightbulbStartedEvent) -> None:
         print("Bot started, I think")
         logging.info("Abominable intelligence has started!")
         if "restarted" in sys.argv:
-            channel_id = sys.argv[sys.argv.index("restarted") + 1]
+            channel_id = int(sys.argv[sys.argv.index("restarted") + 1])
             sys.argv.remove(sys.argv[sys.argv.index("restarted") + 1])
             sys.argv.remove("restarted")
             await event.bot.rest.create_message(

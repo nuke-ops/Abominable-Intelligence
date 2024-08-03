@@ -14,8 +14,8 @@ bot_dir = os.path.dirname(os.path.abspath(__file__))
 def add_element_to_json(file_path: str, keys: list, value: str) -> None:
     file_path = os.path.join(bot_dir + "/data", file_path)
     with open(file_path, "r") as json_file:
-        data = json.load(json_file)
-    current_level = data
+        json_content = json.load(json_file)
+    current_level = json_content
     for key in keys[:-1]:
         if key in current_level:
             current_level = current_level[key]
@@ -24,14 +24,14 @@ def add_element_to_json(file_path: str, keys: list, value: str) -> None:
             current_level = current_level[key]
     current_level[keys[-1]] = value
     with open(file_path, "w") as json_file:
-        json.dump(data, json_file, indent=4)
+        json.dump(json_content, json_file, indent=4)
 
 
 def remove_element_from_json(file_path: str, keys: list) -> None:
     file_path = os.path.join(bot_dir + "/data", file_path)
     with open(file_path, "r") as json_file:
-        data = json.load(json_file)
-    current_level = data
+        json_content = json.load(json_file)
+    current_level = json_content
     for key in keys[:-1]:
         if key in current_level:
             current_level = current_level[key]
@@ -40,7 +40,7 @@ def remove_element_from_json(file_path: str, keys: list) -> None:
     if keys[-1] in current_level:
         del current_level[keys[-1]]
     with open(file_path, "w") as json_file:
-        json.dump(data, json_file, indent=4)
+        json.dump(json_content, json_file, indent=4)
 
 
 ###

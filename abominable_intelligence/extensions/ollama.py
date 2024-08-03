@@ -12,14 +12,14 @@ from extensions.core import error
 from data_manager import config, data
 
 bot_config = config()["bot"]
-ollama_settings = data()["ai"]
-plugin = lightbulb.Plugin("ollama", default_enabled_guilds=[])
+ollama_config = data()["ai"]
+plugin = lightbulb.Plugin("ollama", default_enabled_guilds=[bot_config["guild_id"]])
 
 
 def _call(prompt) -> Generator[bytes, None, None]:
-    address = f"http://{ollama_settings['host']}:{ollama_settings['port']}/api/generate"
+    address = f"http://{ollama_config['host']}:{ollama_config['port']}/api/generate"
     payload = {
-        "model": ollama_settings["model"],
+        "model": ollama_config["model"],
         "prompt": prompt,
         "options": {
             "temperature": 0.6,
@@ -50,18 +50,18 @@ def _buffered_call(prompt) -> Generator[tuple[str, dict], None, None]:
 
 class OllamaSettingsModal(miru.Modal):
     host = miru.TextInput(
-        label="host", placeholder="localhost", value=ollama_settings["host"]
+        label="host", placeholder="localhost", value=ollama_config["host"]
     )
     port = miru.TextInput(
-        label="port", placeholder="11434", value=ollama_settings["port"]
+        label="port", placeholder="11434", value=ollama_config["port"]
     )
     model = miru.TextInput(
         label="model",
         placeholder="llama2",
-        value=ollama_settings["model"],
+        value=ollama_config["model"],
     )
     temperature = miru.TextInput(
-        label="temperature", placeholder="0.6", value=ollama_settings["temperature"]
+        label="temperature", placeholder="0.6", value=ollama_config["temperature"]
     )
 
     async def callback(self, ctx: miru.ModalContext) -> None:
@@ -99,22 +99,22 @@ class OllamaSettingsModal(miru.Modal):
 @plugin.command
 @lightbulb.command("ai", "Bootleg Ollama module")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
-async def ai(ctx: lightbulb.Context) -> None:
+async def ai() -> None:
     pass
 
 
-@ai.child
+@ai.child()
 @lightbulb.command("settings", "ollama settings", guilds=[bot_config["guild_id"]])
 @lightbulb.implements(lightbulb.SlashSubCommand)
 @administration_only
-async def ollamaSettings(ctx: lightbulb.SlashContext) -> None:
+async def ollama_settings(ctx: lightbulb.SlashContext) -> None:
     modal = OllamaSettingsModal("Ollama Settings")
     builder = modal.build_response(ctx.bot.d.miru)
     await builder.create_modal_response(ctx.interaction)
     ctx.bot.d.miru.start_modal(modal)
 
 
-@ai.child
+@ai.child()
 @lightbulb.option("prompt", "prompt", str, required=True)
 @lightbulb.command("prompt", "Prompt")
 @lightbulb.implements(lightbulb.SlashSubCommand)

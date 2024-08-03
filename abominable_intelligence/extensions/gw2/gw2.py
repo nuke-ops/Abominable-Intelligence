@@ -9,7 +9,7 @@ from .gw2api import Gw2API
 
 bot_config = config()["bot"]
 data = data()["gw2"]
-sql = Sql().gw2()
+sql = Sql().Gw2()
 guilds = data["guilds"]
 
 plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
@@ -83,7 +83,7 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
 
 
 @administration_only
-@gw2.child
+@gw2.child()
 @lightbulb.option(
     "user",
     "discord account",
