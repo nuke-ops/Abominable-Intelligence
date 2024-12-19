@@ -2,8 +2,6 @@ from random import randint
 
 import hikari
 import lightbulb
-import miru
-from extensions.core import error
 from miru.ext import nav
 
 plugin = lightbulb.Plugin("Tabletop", default_enabled_guilds=[])
@@ -33,6 +31,10 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
     max_fields_per_page = 24
     sum_pages = ctx.options.dice // (max_fields_per_page + 1) + 1
 
+    page_footer = (
+        lambda cur_page, sum_pages, sum_roll_page: f"Page: {cur_page}/{sum_pages} | Page Summary: {sum_roll_page}"
+    )
+
     # throw dice
     for x in range(1, ctx.options.dice + 1):
         fields_counter += 1
@@ -52,9 +54,7 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
         if fields_counter == max_fields_per_page:
             current_page += 1
             embeds.append(embed)
-            embed.set_footer(
-                f"Page: {current_page}/{sum_pages} | Summary: {page_summary}"
-            )
+            embed.set_footer(page_footer(current_page, sum_pages, page_summary))
             embed = hikari.Embed(color=hikari.Color.of(0x00FF00))
             fields_counter = 0
             page_summary = 0
@@ -62,12 +62,10 @@ async def dice(ctx: lightbulb.SlashContext) -> None:
     # if last page wasn't fully filled, add remnant dice rolls
     if len(embed.fields) < max_fields_per_page:
         current_page += 1
-        embed.set_footer(
-            f"Page: {current_page}/{sum_pages} | Total Summary: {page_summary}"
-        )
+        embed.set_footer(page_footer(current_page, sum_pages, page_summary))
         embeds.append(embed)
     for x in range(len(embeds)):
-        description = f"**{ctx.options.dice}**d**{ctx.options.sides}** | **Page Summary**: **{summary}**"
+        description = f"**{ctx.options.dice}** D**{ctx.options.sides}** | Total Summary: **{summary}**"
         embeds[x].description = description
     # send embed if it's just a one page
     if sum_pages <= 1:
