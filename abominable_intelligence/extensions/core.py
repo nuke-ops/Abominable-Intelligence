@@ -19,6 +19,7 @@ async def error(
     description: str = None,
     error: str = None,
 ) -> None:
+    """Send an embed with red border"""
     await ctx.respond(
         embed=hikari.Embed(
             title=title if title else "Error",
@@ -33,6 +34,7 @@ async def error(
 
 
 async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
+    """Send an embed with green border"""
     await ctx.respond(
         embed=hikari.Embed(
             title=title, description=description, color=hikari.Color.of(0xAAFF00)
@@ -55,7 +57,7 @@ async def restart(ctx: lightbulb.Context):
     await ctx.respond("Restarting the bot...")
     await ctx.bot.rest.trigger_typing(ctx.channel_id)
     try:
-        # Restart the process with the previous arguments plus a channel ID for the on_ready() function from listeners.py module
+        # Restart the process with the previous arguments and the channel ID for the on_ready() event
         os.execv(
             sys.executable,
             ["python"] + sys.argv + ["restarted", str(ctx.channel_id)],
@@ -95,7 +97,7 @@ class CoreSettingsModal(miru.Modal):
 @lightbulb.command("settings", "Bot settings", guilds=[bot_config["guild_id"]])
 @lightbulb.implements(lightbulb.SlashCommand)
 @administration_only
-async def coreSettings(ctx: lightbulb.SlashContext) -> None:
+async def core_settings(ctx: lightbulb.SlashContext) -> None:
     modal = CoreSettingsModal("Bot Settings")
     builder = modal.build_response(ctx.bot.d.miru)
     await builder.create_modal_response(ctx.interaction)

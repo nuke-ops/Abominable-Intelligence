@@ -1,39 +1,18 @@
-import json
 import logging
 
 import lightbulb
-import requests
 from data_manager import config, data
-from extensions.core import error, success
+from extensions.core import administration_only, error, success
 from extensions.MySQL import Sql
+
+from .gw2api import Gw2API
 
 bot_config = config()["bot"]
 data = data()["gw2"]
-sql = Sql().gw2()
-
-plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
-
-api_account = "https://api.guildwars2.com/v2/account/"
-api_guild = "https://api.guildwars2.com/v2/guild/"
-
+sql = Sql().Gw2()
 guilds = data["guilds"]
 
-
-def _list_guilds(api_key) -> list:
-    headers = {"Authorization": "Bearer " + api_key}
-    response = requests.get(api_account, headers=headers)
-    return json.loads(response.text)["guilds"]
-
-
-def _get_guild_tag(guild_id) -> str:
-    response = requests.get(api_guild + guild_id)
-    return json.loads(response.text)["tag"]
-
-
-def _account_exists(api_key) -> bool:
-    headers = {"Authorization": "Bearer " + api_key}
-    response = requests.get(api_account, headers=headers)
-    return True if response.status_code == 200 else False
+plugin = lightbulb.Plugin("gw2", default_enabled_guilds=[bot_config["guild_id"]])
 
 
 @plugin.command
@@ -48,7 +27,8 @@ async def gw2(ctx: lightbulb.Context) -> None:
 @lightbulb.command("save-api-key", "Saves the API key", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def save_api_key(ctx: lightbulb.SlashContext) -> None:
-    if not _account_exists(ctx.options.api_key):
+    api_key = sql.select(ctx.options.user)
+    if not Gw2API.account_exists(api_key):
         await error(ctx=ctx, title="api_key", description="Invalid API")
         return
     if sql.select(ctx.member.username):
@@ -79,17 +59,17 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
     if not api_key:
         await error(ctx=ctx, title="verify", description="API key not found")
         return
-    if not _account_exists(api_key):
+    if not Gw2API.account_exists(api_key):
         await error(ctx=ctx, title="verify", description="Invalid API")
         return
 
-    user_guilds = _list_guilds(api_key)
+    user_guilds = Gw2API.list_guilds(api_key)
     output = ""
     for guild in guilds:
         guild_id = guilds[guild]["id"]
         if guild_id in user_guilds:
             guild_role = guilds[guild]["discord_role"]
-            guild_tag = _get_guild_tag(guild_id)
+            guild_tag = Gw2API.get_guild_tag(guild_id)
             await ctx.member.add_role(guild_role)
             output += f"Added [{guild_tag}] rank\n"
     if output == "":
@@ -100,6 +80,21 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
         )
         return
     await success(ctx, "verify", output)
+
+
+@administration_only
+@gw2.child()
+@lightbulb.option(
+    "user",
+    "discord account",
+    str,
+    required=True,
+)
+@lightbulb.command("lookup", "checks game account name of the given discord user")
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def lookup(ctx: lightbulb.SlashContext) -> None:
+    api_key = sql.select(ctx.options.user)
+    await ctx.respond(Gw2API.user_lookup(api_key))
 
 
 def load(bot):

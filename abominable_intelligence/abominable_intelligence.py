@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # guild modules
     bot.load_extensions("extensions.git")
-    bot.load_extensions("extensions.gw2")
+    bot.load_extensions("extensions.gw2.gw2")
 
     # external modules
     if os.path.exists(bot_dir + "/extensions/test.py"):

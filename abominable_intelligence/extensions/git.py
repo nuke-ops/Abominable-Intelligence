@@ -28,10 +28,10 @@ async def _pull(ctx) -> None:
         await ctx.respond(pull)
         if "Already up to date" not in pull:
             await restart(ctx)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         await ctx.respond("Pull failed due to conflicts or other errors.")
         traceback.print_exc()
-    except Exception as e:
+    except Exception:
         await ctx.respond(
             "An unexpected error occurred while pulling from Git repository."
         )
@@ -55,7 +55,7 @@ async def _checkout(ctx, branch) -> None:
         await error(ctx, "checkout", "An unexpected error occurred", e)
 
 
-async def _branches(ctx: lightbulb.Context) -> None:
+async def _branches(ctx: miru.ViewContext) -> None:
     current_branch = subprocess.check_output(
         "git branch --show-current".split()
     ).decode()
@@ -73,8 +73,8 @@ async def _reset(ctx) -> None:
             ).decode()
             message = await message.edit(f"{remove_backup}")
         backup = subprocess.check_output("git branch local-backup".split()).decode()
-        message = await message.edit(f"{backup}\nOld branch backed up")
-    except Exception as e:
+        await message.edit(f"{backup}\nOld branch backed up")
+    except Exception:
         await ctx.respond("Backup failed")
 
     message = await ctx.respond("Resetting the branch...\n")
@@ -88,21 +88,21 @@ async def _reset(ctx) -> None:
 
 class GitButtons(miru.View):
     @miru.button(label="Pull", style=hikari.ButtonStyle.PRIMARY)
-    async def pull_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
+    async def pull_button(self, ctx: miru.ViewContext) -> None:
         await _pull(ctx)
 
     @miru.button(label="Checkout", style=hikari.ButtonStyle.PRIMARY)
-    async def checkout_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
+    async def checkout_button(self, ctx: miru.ViewContext) -> None:
         if not any(isinstance(child, miru.TextSelect) for child in self.children):
             self.add_item(SelectBranch())
             await ctx.message.edit(components=self)
 
     @miru.button(label="List branches", style=hikari.ButtonStyle.SUCCESS)
-    async def branches_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
+    async def branches_button(self, ctx: miru.ViewContext) -> None:
         await _branches(ctx)
 
     @miru.button(label="Hard reset", style=hikari.ButtonStyle.DANGER)
-    async def reset_button(self, ctx: miru.ViewContext, button: miru.Button) -> None:
+    async def reset_button(self, ctx: miru.ViewContext) -> None:
         await _reset(ctx)
 
     async def on_timeout(self) -> None:
