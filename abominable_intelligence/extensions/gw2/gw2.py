@@ -94,6 +94,9 @@ async def verify(ctx: lightbulb.SlashContext) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def lookup(ctx: lightbulb.SlashContext) -> None:
     api_key = sql.select(ctx.options.user)
+    if not api_key:
+        await ctx.respond("User not found")
+        return
     await ctx.respond(Gw2API.user_lookup(api_key))
 
 
