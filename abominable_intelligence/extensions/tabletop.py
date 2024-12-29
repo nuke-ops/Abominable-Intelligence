@@ -1,4 +1,5 @@
 from random import randint
+from re import compile as regex_compile
 
 import hikari
 import lightbulb
@@ -199,6 +200,86 @@ async def send_paginated_embeds(
     builder = await navigator.build_response_async(ctx.bot.d.miru)
     await builder.create_initial_response(ctx.interaction)
     ctx.app.d.miru.start_view(navigator)
+
+
+###
+### Backup text command
+###
+
+# Define the regex for "int int"
+DICE_REGEX = regex_compile(r"^\d+\s\d+$")
+
+
+@plugin.listener(hikari.MessageCreateEvent)
+async def on_message_create(event: hikari.MessageCreateEvent):
+    if event.message.author.is_bot or not event.content.startswith("!dice "):
+        return
+
+    # Extract the part of the message after "!dice "
+    dice_command = event.content[6:].strip()
+
+    # Check if the message matches the regex
+    if not DICE_REGEX.match(dice_command):
+        await event.message.respond(
+            "Invalid message! Use the format: `!dice <int> <int>`"
+        )
+    else:
+        # If the regex matches, you can safely parse the integers
+        dice, sides = map(int, dice_command.split())
+        # await roll_dice(dice, sides, event)
+        await throw_manual(event, dice, sides)
+
+
+# async def roll_dice(dice: int, sides: int, event: hikari.MessageCreateEvent):
+#     """
+#     Rolls the specified number of dice with the specified number of sides and responds with the results.
+#
+#     Args:
+#         dice: Number of dice to roll.
+#         sides: Number of sides per dice.
+#         event: The message event triggering the roll.
+#     """
+#
+#     if dice > 500 or sides > 500:  # Optional sanity check
+#         await event.message.respond("Too many dice or sides! Maximum is 500 for each.")
+#         return
+#
+#     results = [randint(1, sides) for _ in range(dice)]
+#     total = sum(results)
+#
+#     await event.message.respond(
+#         f"You rolled **{dice}** D**{sides}**:\n"
+#         f"{', '.join(map(str, results))}\n"
+#         f"Total: **{total}**"
+#     )
+
+
+async def throw_manual(
+    ctx: hikari.MessageCreateEvent, dice: int = 1, sides: int = 20
+) -> None:
+    # Maximum number of fields that can fit in one Discord embed
+    max_fields_per_page = 24
+    # Total number of pages required to display all dice rolls
+    sum_pages = dice // (max_fields_per_page + 1) + 1
+
+    # Roll all dice and calculate the total summary
+    dice_rolls, total_summary = roll_all_dice(dice, sides)
+    # Build the embeds for displaying results
+    embeds = build_embeds(
+        dice_rolls,
+        total_summary,
+        max_fields_per_page,
+        sum_pages,
+        dice,
+        sides,
+    )
+
+    # If there's only one embed, respond directly
+    if len(embeds) == 1:
+        await ctx.message.respond(embeds[0])
+    # Otherwise, send paginated embeds with navigation
+    else:
+        await send_paginated_embeds(ctx, embeds)
 
 
 def load(bot):
