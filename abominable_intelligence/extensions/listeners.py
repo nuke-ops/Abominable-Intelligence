@@ -2,14 +2,15 @@ import logging
 import sys
 import traceback
 
+import hikari
 import lightbulb
 from extensions.core import error
 
-plugin = lightbulb.Plugin("listeners")
+loader = lightbulb.Loader()
 
 
-@plugin.listener(lightbulb.events.LightbulbStartedEvent)
-async def on_ready(event: lightbulb.LightbulbStartedEvent) -> None:
+@loader.listener(hikari.StartingEvent)
+async def on_ready(event: hikari.StartingEvent) -> None:
     try:
         print("Bot started, I think")
         logging.info("Abominable intelligence has started!")
@@ -17,26 +18,20 @@ async def on_ready(event: lightbulb.LightbulbStartedEvent) -> None:
             channel_id = int(sys.argv[sys.argv.index("restarted") + 1])
             sys.argv.remove(sys.argv[sys.argv.index("restarted") + 1])
             sys.argv.remove("restarted")
-            await event.bot.rest.create_message(
+            await event.app.rest.create_message(
                 channel=channel_id, content="Restart succeeded"
             )
     except Exception:
         traceback.print_exc()
 
 
-@plugin.listener(lightbulb.CommandErrorEvent)
-async def on_error(event: lightbulb.CommandErrorEvent) -> None:
-    if not isinstance(event.exception, lightbulb.CommandInvocationError):
-        logging.warning(event.exception.original)
-        return
+@loader.error_handler
+async def on_error(exc: lightbulb.exceptions.ExecutionPipelineFailedException) -> bool:
+    ctx = exc.context
     await error(
-        ctx=event.context,
-        title=event.context.command.name,
+        ctx=ctx,
+        title=ctx.command._command_data.name,
         description="Something went wrong during invocation of command",
-        error=event.exception.original,
+        error=exc.__cause__,
     )
-    return
-
-
-def load(bot):
-    bot.add_plugin(plugin)
+    return True  # True = error was handled, False = not handled
