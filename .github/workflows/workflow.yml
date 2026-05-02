@@ -21,8 +21,7 @@ jobs:
         env:
           STATUS: ""
         run: |
-          chmod +x .github/workflows/scripts/run.sh
-          .github/workflows/scripts/run.sh
+          uv run .github/workflows/scripts/run.sh
           echo "STATUS=${STATUS}" >> $GITHUB_ENV
         shell: bash
       - name: Check status
