@@ -4,12 +4,13 @@ import traceback
 import hikari
 import lightbulb
 import miru
-from extensions.core import error, is_admin, restart, success
+from extensions.core import error, is_admin, Restart, success
 
-plugin = lightbulb.Plugin("git")
+loader = lightbulb.Loader()
+git_group = lightbulb.Group("git", "Panel with git commands")
 
 
-def _list_branches() -> list:
+def _list_branches() -> list[str]:
     find_branches = (
         subprocess.check_output("git branch -r".split()).decode().split("\n")
     )
@@ -21,13 +22,14 @@ def _list_branches() -> list:
     return branches
 
 
-async def _pull(ctx) -> None:
+async def _pull(ctx: lightbulb.Context) -> None:
     await ctx.respond("Looking for changes...")
     try:
         pull = subprocess.check_output("git pull".split()).decode()
         await ctx.respond(pull)
         if "Already up to date" not in pull:
-            await restart(ctx)
+            # await restart(ctx)
+            Restart()
     except subprocess.CalledProcessError:
         await ctx.respond("Pull failed due to conflicts or other errors.")
         traceback.print_exc()
@@ -38,7 +40,7 @@ async def _pull(ctx) -> None:
         traceback.print_exc()
 
 
-async def _checkout(ctx, branch) -> None:
+async def _checkout(ctx: lightbulb.Context, branch: str) -> None:
     try:
         result = subprocess.run(
             f"git checkout {branch}".split(), capture_output=True, text=True, check=True
@@ -55,7 +57,7 @@ async def _checkout(ctx, branch) -> None:
         await error(ctx, "checkout", "An unexpected error occurred", e)
 
 
-async def _branches(ctx: miru.ViewContext) -> None:
+async def _branches(ctx: lightbulb.Context) -> None:
     current_branch = subprocess.check_output(
         "git branch --show-current".split()
     ).decode()
@@ -63,26 +65,28 @@ async def _branches(ctx: miru.ViewContext) -> None:
     await success(ctx, f"Current branch: {current_branch}", branches)
 
 
-async def _reset(ctx) -> None:
-    message = await ctx.respond("Backing up the branch...")
+async def _reset(ctx: lightbulb.Context) -> None:
+    await ctx.respond("Backing up the branch...")
+    message = await ctx.interaction.fetch_initial_response()
     try:
         if "local-backup" in _list_branches():
-            message = await message.edit(f"Removing old backup")
+            await message.edit("Removing old backup")
             remove_backup = subprocess.check_output(
                 "git branch --delete local-backup".split()
             ).decode()
-            message = await message.edit(f"{remove_backup}")
+            await message.edit(f"{remove_backup}")
         backup = subprocess.check_output("git branch local-backup".split()).decode()
         await message.edit(f"{backup}\nOld branch backed up")
     except Exception:
         await ctx.respond("Backup failed")
 
-    message = await ctx.respond("Resetting the branch...\n")
+    await ctx.respond("Resetting the branch...\n")
+    message = await ctx.interaction.fetch_initial_response()
     try:
         branch_reset = subprocess.check_output("git reset --hard".split()).decode()
         await message.edit(branch_reset)
     except Exception:
-        await ctx.respond(message.content + "Reset failed")
+        await ctx.respond("Reset failed")
         traceback.print_exc()
 
 
@@ -128,7 +132,6 @@ class SelectBranch(miru.TextSelect):
         )
 
     async def callback(self, ctx: miru.ViewContext) -> None:
-        print(self.values)
         await _checkout(ctx, self.values[0])
 
     async def view_check(self, ctx: miru.ViewContext) -> bool:
@@ -141,16 +144,20 @@ class SelectBranch(miru.TextSelect):
         return True
 
 
-@plugin.command
-@lightbulb.command("git", "panel with git commands")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def git(ctx: lightbulb.SlashContext) -> None:
-    view = GitButtons(timeout=120)
-    response = await ctx.respond(components=view)
-    message = await response  # Convert ResponseProxy to Message
-    miru_client: miru.Client = ctx.app.d.miru
-    miru_client.start_view(view, bind_to=message)
+@git_group.register
+class Git(
+    lightbulb.SlashCommand,
+    name="panel",
+    description="Panel with git commands",
+):
+    @lightbulb.invoke
+    async def invoke(
+        self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
+    ) -> None:
+        view = GitButtons(timeout=120)
+        await ctx.respond(components=view)
+        message = await ctx.interaction.fetch_initial_response()
+        miru_client.start_view(view, bind_to=message)
 
 
-def load(bot):
-    bot.add_plugin(plugin)
+loader.command(git_group)

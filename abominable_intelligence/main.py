@@ -33,7 +33,9 @@ async def on_starting(_: hikari.StartingEvent) -> None:
         miru.Client, miru_client
     )
     # core extensions
-    await client.load_extensions("extensions.core", "extensions.listeners")
+    await client.load_extensions(
+        "extensions.core", "extensions.listeners", "extensions.git"
+    )
 
     # general use extensions
     await client.load_extensions("extensions.tabletop", "extensions.ollama")
