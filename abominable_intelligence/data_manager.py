@@ -67,7 +67,7 @@ def config() -> dict[str, dict[str, Any]]:
         }
 
 
-def data() -> dict:
+def data() -> dict[str, dict[str, Any]]:
     try:
         config_file = os.path.join(bot_dir + "/data", "data.json")
         with open(config_file) as conf:

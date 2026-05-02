@@ -34,7 +34,7 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     )
 
     # general use modules
-    await client.load_extensions("extensions.tabletop")
+    await client.load_extensions("extensions.tabletop", "extensions.ollama")
 
     # external modules
     if os.path.exists(bot_dir + "/extensions/test.py"):
