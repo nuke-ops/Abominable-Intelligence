@@ -205,9 +205,10 @@ async def on_message_create(event: hikari.MessageCreateEvent) -> None:
     if event.message.author.is_bot or not event.content:
         return
     message: str = event.content
+    if message[:6] != "!dice ":
+        return
 
-    # Extract the part of the message after "!dice "
-    dice_command = message[6:].strip()
+    dice_command = message[6:].strip()  # Extract the part of the message after "!dice "
 
     # Check if the message matches the regex
     if not DICE_REGEX.match(dice_command):

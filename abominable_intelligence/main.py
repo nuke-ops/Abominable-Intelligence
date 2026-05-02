@@ -28,10 +28,18 @@ miru_client = miru.Client(bot)
 
 @bot.listen(hikari.StartingEvent)
 async def on_starting(_: hikari.StartingEvent) -> None:
+    # save miru's client
     client.di.registry_for(lightbulb.di.Contexts.DEFAULT).register_value(
         miru.Client, miru_client
     )
+
+    # general use modules
     await client.load_extensions("extensions.tabletop")
+
+    # external modules
+    if os.path.exists(bot_dir + "/extensions/test.py"):
+        await client.load_extensions("extensions.test")
+
     await client.start()
 
 
