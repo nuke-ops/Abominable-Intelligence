@@ -1,9 +1,11 @@
+from typing import Any
+
 import requests
 import json
 
-api_account = "https://api.guildwars2.com/v2/account/"
-api_guild = "https://api.guildwars2.com/v2/guild/"
-api_worlds = "https://api.guildwars2.com/v2/worlds"
+API_ACCOUNT = "https://api.guildwars2.com/v2/account/"
+API_GUILD = "https://api.guildwars2.com/v2/guild/"
+API_WORLDS = "https://api.guildwars2.com/v2/worlds"
 
 
 def _convert_age(age_seconds: int) -> str:
@@ -15,14 +17,14 @@ def _created(date: str) -> str:
 
 
 def _convert_world(world_id: int) -> str:
-    world_data = requests.get(f"{api_worlds}?ids={world_id}").json()[0]
+    world_data = requests.get(f"{API_WORLDS}?ids={world_id}", timeout=10).json()[0]
     region = (
         "EU" if str(world_id)[0] == "2" else ("NA" if str(world_id)[0] == "1" else None)
     )
     return f"{world_data.get('name', 'unknown')} ({region})"
 
 
-def _convert_value(key, value):
+def _convert_value(key: str, value: Any):
     if key == "age":
         return _convert_age(value)
     elif key == "created":
@@ -34,23 +36,27 @@ def _convert_value(key, value):
 
 
 class Gw2API:
-    def list_guilds(api_key) -> list:
+    def list_guilds(self, api_key: str) -> list[str]:
         headers = {"Authorization": "Bearer " + api_key}
-        response = requests.get(api_account, headers=headers)
+        response = requests.get(API_ACCOUNT, headers=headers, timeout=10)
         return json.loads(response.text)["guilds"]
 
-    def get_guild_tag(guild_id) -> str:
-        response = requests.get(api_guild + guild_id)
+    def get_guild_tag(self, guild_id: str) -> str:
+        response = requests.get(API_GUILD + guild_id, timeout=10)
         return json.loads(response.text)["tag"]
 
-    def account_exists(api_key) -> bool:
+    def account_exists(self, api_key: str | None) -> bool:
+        if not api_key:
+            return False
         headers = {"Authorization": "Bearer " + api_key}
-        response = requests.get(api_account, headers=headers)
+        response = requests.get(API_ACCOUNT, headers=headers, timeout=10)
         return True if response.status_code == 200 else False
 
-    def user_lookup(api_key) -> str:
+    def user_lookup(self, api_key: str) -> str:
         headers = {"Authorization": "Bearer " + api_key}
-        account_info_json = requests.get(api_account, headers=headers).json()
+        account_info_json = requests.get(
+            API_ACCOUNT, headers=headers, timeout=10
+        ).json()
 
         exclude = ["guilds", "guild_leader", "commander", "daily_ap", "monthly_ap"]
         account_info = "\n".join(

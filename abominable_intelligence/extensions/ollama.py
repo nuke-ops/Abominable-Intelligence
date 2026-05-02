@@ -1,24 +1,24 @@
 import json
 import logging
-from typing import Generator
+from typing import Any, Generator
 
-import data_manager
 import hikari
 import lightbulb
 import miru
 import requests
-from decorators import administration_only
-from extensions.core import error
-from data_manager import config, data
+from data_manager import add_element_to_json, config, data
+from hooks import administration_only
 
 bot_config = config()["bot"]
 ollama_config = data()["ai"]
-plugin = lightbulb.Plugin("ollama", default_enabled_guilds=[bot_config["guild_id"]])
+
+loader = lightbulb.Loader()
+ollama = lightbulb.Group("ai", "Bootleg Ollama module")
 
 
-def _call(prompt) -> Generator[bytes, None, None]:
+def _call(prompt: str) -> Generator[bytes, None, None]:
     address = f"http://{ollama_config['host']}:{ollama_config['port']}/api/generate"
-    payload = {
+    payload: dict[str, Any] = {
         "model": ollama_config["model"],
         "prompt": prompt,
         "options": {
@@ -26,7 +26,7 @@ def _call(prompt) -> Generator[bytes, None, None]:
         },
     }
     try:
-        r = requests.post(address, json=payload)
+        r: requests.Response = requests.post(address, json=payload, timeout=10)
     except requests.exceptions.RequestException as e:
         logging.warning(e)
         return
@@ -36,7 +36,9 @@ def _call(prompt) -> Generator[bytes, None, None]:
             yield json.loads(line)
 
 
-def _buffered_call(prompt) -> Generator[tuple[str, dict], None, None]:
+def _buffered_call(
+    prompt: str,
+) -> Generator[tuple[str, dict[str, Any]], None, None]:
     buffer = ""
     for part in _call(prompt):
         if part.get("done"):
@@ -48,7 +50,7 @@ def _buffered_call(prompt) -> Generator[tuple[str, dict], None, None]:
             buffer = ""
 
 
-class OllamaSettingsModal(miru.Modal):
+class OllamaSettingsModal(miru.Modal, title="Ollama Settings"):
     host = miru.TextInput(
         label="host", placeholder="localhost", value=ollama_config["host"]
     )
@@ -96,48 +98,50 @@ class OllamaSettingsModal(miru.Modal):
         )
 
 
-@plugin.command
-@lightbulb.command("ai", "Bootleg Ollama module")
-@lightbulb.implements(lightbulb.SlashCommandGroup)
-async def ai() -> None:
-    pass
+@ollama.register
+class OllamaSettings(
+    lightbulb.SlashCommand,
+    name="settings",
+    description="ollama settings",
+    hooks=[administration_only],
+):
+    @lightbulb.invoke
+    async def ollama_settings(
+        self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
+    ) -> None:
+        modal = OllamaSettingsModal()
+        builder = modal.build_response(miru_client)
+        await builder.create_modal_response(ctx.interaction)
+        miru_client.start_modal(modal)
 
 
-@ai.child()
-@lightbulb.command("settings", "ollama settings", guilds=[bot_config["guild_id"]])
-@lightbulb.implements(lightbulb.SlashSubCommand)
-@administration_only
-async def ollama_settings(ctx: lightbulb.SlashContext) -> None:
-    modal = OllamaSettingsModal("Ollama Settings")
-    builder = modal.build_response(ctx.bot.d.miru)
-    await builder.create_modal_response(ctx.interaction)
-    ctx.bot.d.miru.start_modal(modal)
+# @lightbulb.option("prompt", "prompt", str, required=True)
+# @lightbulb.command("prompt", "Prompt")
+# @administration_only
+@ollama.register
+class OllamaPrompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
+    prompt = lightbulb.string("prompt", "prompt for AI")
+
+    @lightbulb.invoke
+    async def ollama_prompt(self, ctx: lightbulb.Context) -> None:
+        response_content = ""
+        x = 0
+        template = """Answer the prompt by following these rules:
+    1. Keep your responses under 2000 characters.
+    2. If you don't know the answer, just say that you don't know, try to not make up an answer.
+    3. Use Discord markdown syntax, eg. if it's code block, surround it with triple apostrophes and add the code language on the start eg. "```py"
+    The prompt:
+    """
+        async with ctx.client.app.rest.trigger_typing(ctx.channel_id):
+            await ctx.respond(f"> {self.prompt}")
+            message = await ctx.interaction.fetch_initial_response()
+            for buffer, _ in _buffered_call(template + self.prompt):
+                x += 1
+                if x > 5:
+                    await ctx.client.app.rest.trigger_typing(ctx.channel_id)
+                    x = 0
+                response_content += buffer
+                await message.edit(f"> {self.prompt} \n\n{response_content}")
 
 
-@ai.child()
-@lightbulb.option("prompt", "prompt", str, required=True)
-@lightbulb.command("prompt", "Prompt")
-@lightbulb.implements(lightbulb.SlashSubCommand)
-@administration_only
-async def ai_prompt(ctx: lightbulb.Context) -> None:
-    response_content = ""
-    x = 0
-    template = """Answer the prompt by following these rules:
-1. Keep your responses under 2000 characters.
-2. If you don't know the answer, just say that you don't know, try to not make up an answer.
-3. Use Discord markdown syntax, eg. if it's code block, surround it with triple apostrophes and add the code language on the start eg. "```py"
-The prompt:
-"""
-    async with ctx.bot.rest.trigger_typing(ctx.channel_id):
-        message = await ctx.respond(f"> {ctx.options.prompt}")
-        for buffer, part in _buffered_call(template + ctx.options.prompt):
-            x += 1
-            if x > 5:
-                await ctx.bot.rest.trigger_typing(ctx.channel_id)
-                x = 0
-            response_content += buffer
-            await message.edit(f"> {ctx.options.prompt} \n\n{response_content}")
-
-
-def load(bot):
-    bot.add_plugin(plugin)
+loader.command(ollama, guilds=[bot_config["guild_id"]])
