@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Any
 
 bot_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,7 +49,7 @@ def remove_element_from_json(file_path: str, keys: list) -> None:
 ###
 
 
-def config() -> dict:
+def config() -> dict[str, dict[str, Any]]:
     try:
         config_file = os.path.join(bot_dir + "/data", "config.json")
         with open(config_file) as conf:

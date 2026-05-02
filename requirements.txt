@@ -1,8 +1,0 @@
-attrs==23.2.0
-hikari==2.0.0.dev122
-hikari-lightbulb==2.3.5
-hikari-miru==4.1.1
-mysql-connector-python==8.3.0
-cryptography==42.0.5
-PyYAML==6.0.1
-requests==2.31.0
