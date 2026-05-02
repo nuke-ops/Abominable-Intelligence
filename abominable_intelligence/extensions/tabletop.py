@@ -20,7 +20,7 @@ class Throw(lightbulb.SlashCommand, name="dice", description="rolls the dice"):
     )
 
     @lightbulb.invoke
-    async def invoke(
+    async def throw(
         self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
     ) -> None:
         # Maximum number of fields that can fit in one Discord embed

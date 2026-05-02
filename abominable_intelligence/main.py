@@ -32,11 +32,13 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     client.di.registry_for(lightbulb.di.Contexts.DEFAULT).register_value(
         miru.Client, miru_client
     )
+    # core extensions
+    await client.load_extensions("extensions.core")
 
-    # general use modules
+    # general use extensions
     await client.load_extensions("extensions.tabletop", "extensions.ollama")
 
-    # external modules
+    # external extensions
     if os.path.exists(bot_dir + "/extensions/test.py"):
         await client.load_extensions("extensions.test")
 

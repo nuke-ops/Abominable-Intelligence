@@ -102,11 +102,11 @@ class OllamaSettingsModal(miru.Modal, title="Ollama Settings"):
 
 # @administration_only
 @ollama.register
-class ollama_settings(
+class Ollama_settings(
     lightbulb.SlashCommand, name="settings", description="ollama settings"
 ):
     @lightbulb.invoke
-    async def invoke(
+    async def ollama_settings(
         self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
     ) -> None:
         modal = OllamaSettingsModal()
@@ -119,11 +119,11 @@ class ollama_settings(
 # @lightbulb.command("prompt", "Prompt")
 # @administration_only
 @ollama.register
-class ollama_prompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
+class Ollama_prompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
     prompt = lightbulb.string("prompt", "prompt for AI")
 
     @lightbulb.invoke
-    async def ivoke(self, ctx: lightbulb.Context) -> None:
+    async def ollama_prompt(self, ctx: lightbulb.Context) -> None:
         response_content = ""
         x = 0
         template = """Answer the prompt by following these rules:
