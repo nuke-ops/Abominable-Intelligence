@@ -5,7 +5,7 @@ import traceback
 import hikari
 import lightbulb
 import miru
-from data_manager import config, data, add_element_to_json
+from data_manager import add_element_to_json, config, data
 from hooks import administration_only
 
 bot_config = config()["bot"]
@@ -15,9 +15,9 @@ loader = lightbulb.Loader()
 
 async def error(
     ctx: lightbulb.Context,
-    title: str = None,
-    description: str = None,
-    error: str = None,
+    title: str,
+    description: str,
+    exception: Exception,
 ) -> None:
     """Send an embed with red border"""
     await ctx.respond(
@@ -25,7 +25,7 @@ async def error(
             title=title if title else "Error",
             description=(
                 f"```{description}```\n**Error**: ```{error}```"
-                if error
+                if exception
                 else description
             ),
             color=hikari.Color.of(0xFF0000),

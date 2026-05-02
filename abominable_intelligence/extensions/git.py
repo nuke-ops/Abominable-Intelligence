@@ -4,7 +4,7 @@ import traceback
 import hikari
 import lightbulb
 import miru
-from extensions.core import error, is_admin, Restart, success
+from extensions.core import Restart, error, is_admin, success
 
 loader = lightbulb.Loader()
 git_group = lightbulb.Group("git", "Panel with git commands")

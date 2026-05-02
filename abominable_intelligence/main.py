@@ -1,9 +1,9 @@
 import os
+
 import hikari
 import lightbulb
-
 import miru
-from data_manager import config, bot_dir
+from data_manager import bot_dir, config
 
 os.chdir(bot_dir)
 

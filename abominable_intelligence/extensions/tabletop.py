@@ -1,5 +1,4 @@
 from random import randint
-
 from re import compile as regex_compile
 
 import hikari

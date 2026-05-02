@@ -2,14 +2,12 @@ import json
 import logging
 from typing import Any, Generator
 
-import data_manager
 import hikari
 import lightbulb
 import miru
 import requests
-
-# from decorators import administration_only
-from data_manager import config, data
+from data_manager import add_element_to_json, config, data
+from hooks import administration_only
 
 bot_config = config()["bot"]
 ollama_config = data()["ai"]
@@ -28,7 +26,7 @@ def _call(prompt: str) -> Generator[bytes, None, None]:
         },
     }
     try:
-        r = requests.post(address, json=payload)
+        r: requests.Response = requests.post(address, json=payload, timeout=10)
     except requests.exceptions.RequestException as e:
         logging.warning(e)
         return
@@ -100,10 +98,12 @@ class OllamaSettingsModal(miru.Modal, title="Ollama Settings"):
         )
 
 
-# @administration_only
 @ollama.register
-class Ollama_settings(
-    lightbulb.SlashCommand, name="settings", description="ollama settings"
+class OllamaSettings(
+    lightbulb.SlashCommand,
+    name="settings",
+    description="ollama settings",
+    hooks=[administration_only],
 ):
     @lightbulb.invoke
     async def ollama_settings(
@@ -119,7 +119,7 @@ class Ollama_settings(
 # @lightbulb.command("prompt", "Prompt")
 # @administration_only
 @ollama.register
-class Ollama_prompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
+class OllamaPrompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
     prompt = lightbulb.string("prompt", "prompt for AI")
 
     @lightbulb.invoke
