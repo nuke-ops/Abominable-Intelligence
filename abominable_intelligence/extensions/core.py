@@ -6,11 +6,11 @@ import hikari
 import lightbulb
 import miru
 from data_manager import config, data, add_element_to_json
-from decorators import administration_only
+from hooks import administration_only
 
 bot_config = config()["bot"]
 data = data()
-plugin = lightbulb.Plugin("Core")
+loader = lightbulb.Loader()
 
 
 async def error(
@@ -42,29 +42,33 @@ async def success(ctx: lightbulb.Context, title: str, description: str) -> None:
     )
 
 
-async def is_admin(ctx: lightbulb.Context):
-    admin_role_id = data["core"]["role_id_administration"]
+async def is_admin(ctx: lightbulb.Context) -> bool:
+    admin_role_id: int = data["core"]["role_id_administration"]
     member_roles = [role.id for role in ctx.member.get_roles()]
-    member_is_owner = bool(ctx.author.id == bot_config["owner_id"])
+    member_is_owner = bool(ctx.user.id == bot_config["owner_id"])
     return bool(member_is_owner or admin_role_id in member_roles)
 
 
-@plugin.command
-@lightbulb.command("restart", "restarts the bot")
-@lightbulb.implements(lightbulb.SlashCommand)
-@administration_only
-async def restart(ctx: lightbulb.Context):
-    await ctx.respond("Restarting the bot...")
-    await ctx.bot.rest.trigger_typing(ctx.channel_id)
-    try:
-        # Restart the process with the previous arguments and the channel ID for the on_ready() event
-        os.execv(
-            sys.executable,
-            ["python"] + sys.argv + ["restarted", str(ctx.channel_id)],
-        )
-    except Exception:
-        await ctx.respond("Restart failed")
-        traceback.print_exc()
+@loader.command(guilds=[bot_config["guild_id"]])
+class Restart(
+    lightbulb.SlashCommand,
+    name="restart",
+    description="restarts the bot",
+    hooks=[administration_only],
+):
+    @lightbulb.invoke
+    async def restart(self, ctx: lightbulb.Context):
+        await ctx.respond("Restarting the bot...")
+        await ctx.client.app.rest.trigger_typing(ctx.channel_id)
+        try:
+            # Restart the process with the previous arguments and the channel ID for the on_ready() event
+            os.execv(
+                sys.executable,
+                ["python"] + sys.argv + ["restarted", str(ctx.channel_id)],
+            )
+        except Exception:
+            await ctx.respond("Restart failed")
+            traceback.print_exc()
 
 
 class CoreSettingsModal(miru.Modal):
@@ -93,16 +97,14 @@ class CoreSettingsModal(miru.Modal):
         )
 
 
-@plugin.command
-@lightbulb.command("settings", "Bot settings", guilds=[bot_config["guild_id"]])
-@lightbulb.implements(lightbulb.SlashCommand)
-@administration_only
-async def core_settings(ctx: lightbulb.SlashContext) -> None:
-    modal = CoreSettingsModal("Bot Settings")
-    builder = modal.build_response(ctx.bot.d.miru)
-    await builder.create_modal_response(ctx.interaction)
-    ctx.bot.d.miru.start_modal(modal)
-
-
-def load(bot):
-    bot.add_plugin(plugin)
+# @administration_only
+@loader.command(guilds=[bot_config["guild_id"]])
+class Settings(lightbulb.SlashCommand, name="settings", description="bot settings"):
+    @lightbulb.invoke
+    async def core_settings(
+        self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
+    ) -> None:
+        modal = CoreSettingsModal("Bot Settings")
+        builder = modal.build_response(miru_client)
+        await builder.create_modal_response(ctx.interaction)
+        miru_client.start_modal(modal)
