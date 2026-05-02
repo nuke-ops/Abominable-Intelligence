@@ -32,6 +32,6 @@ async def on_error(exc: lightbulb.exceptions.ExecutionPipelineFailedException) -
         ctx=ctx,
         title=ctx.command._command_data.name,
         description="Something went wrong during invocation of command",
-        error=exc.__cause__,
+        exception=exc.__cause__,
     )
     return True  # True = error was handled, False = not handled

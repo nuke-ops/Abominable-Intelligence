@@ -17,7 +17,7 @@ async def error(
     ctx: lightbulb.Context,
     title: str,
     description: str,
-    exception: Exception,
+    exception: Exception | None = None,
 ) -> None:
     """Send an embed with red border"""
     await ctx.respond(

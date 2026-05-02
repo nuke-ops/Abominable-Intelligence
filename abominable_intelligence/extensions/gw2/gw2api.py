@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 import json
 
@@ -22,9 +24,7 @@ def _convert_world(world_id: int) -> str:
     return f"{world_data.get('name', 'unknown')} ({region})"
 
 
-def _convert_value(key, value):
-    print(key)
-    print(value)
+def _convert_value(key: str, value: Any):
     if key == "age":
         return _convert_age(value)
     elif key == "created":
@@ -45,7 +45,9 @@ class Gw2API:
         response = requests.get(API_GUILD + guild_id, timeout=10)
         return json.loads(response.text)["tag"]
 
-    def account_exists(self, api_key: str) -> bool:
+    def account_exists(self, api_key: str | None) -> bool:
+        if not api_key:
+            return False
         headers = {"Authorization": "Bearer " + api_key}
         response = requests.get(API_ACCOUNT, headers=headers, timeout=10)
         return True if response.status_code == 200 else False

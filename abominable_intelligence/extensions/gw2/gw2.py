@@ -9,7 +9,7 @@ from hooks import administration_only
 from .gw2api import Gw2API
 
 bot_config = config()["bot"]
-gw2_data = data()["gw2"]  # renamed to avoid shadowing the `data` import
+gw2_data = data()["gw2"]
 sql = Sql().Gw2()
 guilds = gw2_data["guilds"]
 
@@ -23,7 +23,7 @@ class SaveApiKey(
     name="save-api-key",
     description="Saves the API key",
 ):
-    api_key = lightbulb.string("api_key", "API key")
+    api_key = lightbulb.string("api_key", "API key", min_length=72, max_length=72)
 
     @lightbulb.invoke
     async def save_api_key(self, ctx: lightbulb.Context) -> None:
@@ -84,7 +84,7 @@ class Verify(
             await error(
                 ctx=ctx,
                 title="verify",
-                description="Guilds not found, none of ranks were assigned",
+                description="Guilds not found, none of the ranks were assigned",
             )
             return
         await success(ctx, "verify", output)
