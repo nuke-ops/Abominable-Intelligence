@@ -28,8 +28,7 @@ async def _pull(ctx: lightbulb.Context) -> None:
         pull = subprocess.check_output("git pull".split()).decode()
         await ctx.respond(pull)
         if "Already up to date" not in pull:
-            # await restart(ctx)
-            Restart()
+            await Restart().restart(ctx)
     except subprocess.CalledProcessError:
         await ctx.respond("Pull failed due to conflicts or other errors.")
         traceback.print_exc()
