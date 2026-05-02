@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the bot in the background
-python abominable_intelligence/abominable_intelligence.py &
+python abominable_intelligence/main.py &
 
 # Capture the PID of the started process
 BOT_PID=$!
