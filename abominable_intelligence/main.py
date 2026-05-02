@@ -40,6 +40,9 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     # general use extensions
     await client.load_extensions("extensions.tabletop", "extensions.ollama")
 
+    # guild extensions
+    await client.load_extensions("extensions.gw2.gw2")
+
     # external extensions
     if os.path.exists(bot_dir + "/extensions/test.py"):
         await client.load_extensions("extensions.test")
