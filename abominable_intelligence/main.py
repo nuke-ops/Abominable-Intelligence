@@ -31,6 +31,7 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     client.di.registry_for(lightbulb.di.Contexts.DEFAULT).register_value(
         miru.Client, miru_client
     )
+    await client.load_extensions("extensions.tabletop")
     await client.start()
 
 

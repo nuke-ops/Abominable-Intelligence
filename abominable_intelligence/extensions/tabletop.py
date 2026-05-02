@@ -1,49 +1,51 @@
 from random import randint
+
 from re import compile as regex_compile
 
 import hikari
 import lightbulb
+import miru
 from miru.ext import nav
 
-plugin = lightbulb.Plugin("Tabletop", default_enabled_guilds=[])
+loader = lightbulb.Loader()
 
 
-@plugin.command
-@lightbulb.option(
-    "sides",
-    "Amount of sides for each dice",
-    int,
-    default=20,
-    min_value=1,
-    max_value=500,
-)
-@lightbulb.option("dice", "Amount of dice", int, default=1, min_value=1, max_value=500)
-@lightbulb.command("dice", "rolls the dice")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def throw(ctx: lightbulb.SlashContext) -> None:
-    # Maximum number of fields that can fit in one Discord embed
-    max_fields_per_page = 24
-    # Total number of pages required to display all dice rolls
-    sum_pages = ctx.options.dice // (max_fields_per_page + 1) + 1
-
-    # Roll all dice and calculate the total summary
-    dice_rolls, total_summary = roll_all_dice(ctx.options.dice, ctx.options.sides)
-    # Build the embeds for displaying results
-    embeds = build_embeds(
-        dice_rolls,
-        total_summary,
-        max_fields_per_page,
-        sum_pages,
-        ctx.options.dice,
-        ctx.options.sides,
+@loader.command
+class Throw(lightbulb.SlashCommand, name="dice", description="rolls the dice"):
+    dice_amt = lightbulb.integer(
+        "dice", "Amount of dice", default=1, min_value=1, max_value=500
+    )
+    sides_amt = lightbulb.integer(
+        "sides", "Amount of sides for each dice", default=20, min_value=1, max_value=500
     )
 
-    # If there's only one embed, respond directly
-    if len(embeds) == 1:
-        await ctx.respond(embeds[0])
-    # Otherwise, send paginated embeds with navigation
-    else:
-        await send_paginated_embeds(ctx, embeds)
+    @lightbulb.invoke
+    async def invoke(
+        self, ctx: lightbulb.Context, miru_client: miru.Client = lightbulb.di.INJECTED
+    ) -> None:
+        # Maximum number of fields that can fit in one Discord embed
+        max_fields_per_page = 24
+        # Total number of pages required to display all dice rolls
+        sum_pages = self.dice_amt // (max_fields_per_page + 1) + 1
+
+        # Roll all dice and calculate the total summary
+        dice_rolls, total_summary = roll_all_dice(self.dice_amt, self.sides_amt)
+        # Build the embeds for displaying results
+        embeds = build_embeds(
+            dice_rolls,
+            total_summary,
+            max_fields_per_page,
+            sum_pages,
+            self.dice_amt,
+            self.sides_amt,
+        )
+
+        # If there's only one embed, respond directly
+        if len(embeds) == 1:
+            await ctx.respond(embeds[0])
+        # Otherwise, send paginated embeds with navigation
+        else:
+            await send_paginated_embeds(ctx, embeds, miru_client)
 
 
 def roll_all_dice(dice: int, sides: int) -> tuple[list[int], int]:
@@ -58,7 +60,7 @@ def roll_all_dice(dice: int, sides: int) -> tuple[list[int], int]:
         A tuple containing a list of dice rolls and the total sum of all rolls.
     """
 
-    rolls = []
+    rolls: list[int] = []
     total_summary = 0
 
     for _ in range(dice):
@@ -67,6 +69,39 @@ def roll_all_dice(dice: int, sides: int) -> tuple[list[int], int]:
         total_summary += throw
 
     return rolls, total_summary
+
+
+def format_roll_as_ansi(roll: int, sides: int) -> str:
+    """
+    Formats a dice roll result using ANSI codes for better visual clarity in Discord.
+
+    Explanation:
+        Discord does not allow removing bold effect from text in embed fields.
+        So we use ANSI codes to highlight critical rolls:
+        - Red for critical success (highest roll) or failure (lowest roll).
+        - Orange for all other rolls.
+
+    Args:
+        roll: The result of the dice roll.
+        sides: Number of sides on the dice (to identify the highest possible roll).
+
+    Returns:
+        A string containing the formatted roll with ANSI coloring.
+    """
+    ansi_color = "[1;31m" if roll == 1 or roll == sides else "[1;33m"
+    return f"```ansi\n{ansi_color}{roll}```"
+
+
+def create_dice_embed(dice: int, sides: int, total_summary: int) -> hikari.Embed:
+    embed = hikari.Embed(
+        description=f"**{dice}** D**{sides}** | Total Summary: **{total_summary}**",
+        color=hikari.Color.of(0x00FF00),
+    )
+    embed.set_author(
+        name="Dice",
+        icon="https://cdn.discordapp.com/attachments/732923500624347181/1132556441572606012/d20_reversed.png",
+    )
+    return embed
 
 
 def build_embeds(
@@ -91,27 +126,24 @@ def build_embeds(
     Returns:
         A list of Hikari Embed objects, each representing a page.
     """
-    embeds = []
+    embeds: list[hikari.Embed] = []
     current_page = fields_counter = page_summary = 0
 
     # Create the first embed
-    embed = create_dice_embed()
+    embed = create_dice_embed(dice, sides, total_summary)
 
     # Footer format for each embed page
-    page_footer = (
-        lambda cur_page, pages, sum_roll_page: f"Page: {cur_page}/{pages} | Page Summary: {sum_roll_page}"
-    )
+    def page_footer(cur_page: int, pages: int, sum_roll_page: int) -> str:
+        return f"Page: {cur_page}/{pages} | Page Summary: {sum_roll_page}"
 
     # Iterate over dice rolls and add them to the embed fields
     for idx, throw in enumerate(dice_rolls, start=1):
         fields_counter += 1
         page_summary += throw
-
         # Add the roll to the embed
         embed.add_field(
             name=f"{idx}.", value=format_roll_as_ansi(throw, sides), inline=True
         )
-
         # If the current embed has reached the maximum number of fields, finalize it
         if fields_counter == max_fields_per_page:
             current_page += 1
@@ -119,7 +151,7 @@ def build_embeds(
             embeds.append(embed)
 
             # Start a new embed for the next page
-            embed = create_dice_embed()
+            embed = create_dice_embed(dice, sides, total_summary)  # <-- pass args
             fields_counter = 0
             page_summary = 0
 
@@ -129,53 +161,11 @@ def build_embeds(
         embed.set_footer(page_footer(current_page, sum_pages, page_summary))
         embeds.append(embed)
 
-    # Add a description to each embed summarizing the rolls
-    for embed in embeds:
-        embed.description = (
-            f"**{dice}** D**{sides}** | Total Summary: **{total_summary}**"
-        )
-
     return embeds
 
 
-def create_dice_embed() -> hikari.Embed:
-    """
-    Creates a new base embed with default styling for the dice command.
-
-    Returns:
-        A Hikari Embed object.
-    """
-    embed = hikari.Embed(color=hikari.Color.of(0x00FF00))
-    embed.set_author(
-        name="Dice",
-        icon="https://cdn.discordapp.com/attachments/732923500624347181/1132556441572606012/d20_reversed.png",
-    )
-    return embed
-
-
-def format_roll_as_ansi(roll: int, sides: int) -> str:
-    """
-    Formats a dice roll result using ANSI codes for better visual clarity in Discord.
-
-    Explanation:
-        Discord does not allow removing bold effect from text in embed fields.
-        So we use ANSI codes to highlight critical rolls:
-        - Red for critical success (highest roll) or failure (lowest roll).
-        - Orange for all other rolls.
-
-    Args:
-        roll: The result of the dice roll.
-        sides: Number of sides on the dice (to identify the highest possible roll).
-
-    Returns:
-        A string containing the formatted roll with ANSI coloring.
-    """
-    ansi_color = "[1;31m" if roll == 1 or roll == sides else "[1;33m"
-    return f"```ansi\n{ansi_color}{roll}```"
-
-
 async def send_paginated_embeds(
-    ctx: lightbulb.SlashContext, embeds: list[hikari.Embed]
+    ctx: lightbulb.Context, embeds: list[hikari.Embed], miru_client: miru.Client
 ) -> None:
     """
     Sends a paginated response with navigation buttons for multiple embeds.
@@ -197,9 +187,9 @@ async def send_paginated_embeds(
 
     # Create and start the navigator view
     navigator = nav.NavigatorView(pages=embeds, items=items, timeout=118)
-    builder = await navigator.build_response_async(ctx.bot.d.miru)
+    builder = await navigator.build_response_async(miru_client)
     await builder.create_initial_response(ctx.interaction)
-    ctx.app.d.miru.start_view(navigator)
+    miru_client.start_view(navigator)
 
 
 ###
@@ -210,13 +200,14 @@ async def send_paginated_embeds(
 DICE_REGEX = regex_compile(r"^\d+\s\d+$")
 
 
-@plugin.listener(hikari.MessageCreateEvent)
-async def on_message_create(event: hikari.MessageCreateEvent):
-    if event.message.author.is_bot or not event.content.startswith("!dice "):
+@loader.listener(hikari.MessageCreateEvent)
+async def on_message_create(event: hikari.MessageCreateEvent) -> None:
+    if event.message.author.is_bot or not event.content:
         return
+    message: str = event.content
 
     # Extract the part of the message after "!dice "
-    dice_command = event.content[6:].strip()
+    dice_command = message[6:].strip()
 
     # Check if the message matches the regex
     if not DICE_REGEX.match(dice_command):
@@ -230,33 +221,12 @@ async def on_message_create(event: hikari.MessageCreateEvent):
         await throw_manual(event, dice, sides)
 
 
-# async def roll_dice(dice: int, sides: int, event: hikari.MessageCreateEvent):
-#     """
-#     Rolls the specified number of dice with the specified number of sides and responds with the results.
-#
-#     Args:
-#         dice: Number of dice to roll.
-#         sides: Number of sides per dice.
-#         event: The message event triggering the roll.
-#     """
-#
-#     if dice > 500 or sides > 500:  # Optional sanity check
-#         await event.message.respond("Too many dice or sides! Maximum is 500 for each.")
-#         return
-#
-#     results = [randint(1, sides) for _ in range(dice)]
-#     total = sum(results)
-#
-#     await event.message.respond(
-#         f"You rolled **{dice}** D**{sides}**:\n"
-#         f"{', '.join(map(str, results))}\n"
-#         f"Total: **{total}**"
-#     )
-
-
 async def throw_manual(
     ctx: hikari.MessageCreateEvent, dice: int = 1, sides: int = 20
 ) -> None:
+    if dice > 24:
+        await ctx.message.respond("Invalid message! Can't roll more than 24 dice")
+
     # Maximum number of fields that can fit in one Discord embed
     max_fields_per_page = 24
     # Total number of pages required to display all dice rolls
@@ -274,13 +244,4 @@ async def throw_manual(
         sides,
     )
 
-    # If there's only one embed, respond directly
-    if len(embeds) == 1:
-        await ctx.message.respond(embeds[0])
-    # Otherwise, send paginated embeds with navigation
-    else:
-        await send_paginated_embeds(ctx, embeds)
-
-
-def load(bot):
-    bot.add_plugin(plugin)
+    await ctx.message.respond(embeds[0])
