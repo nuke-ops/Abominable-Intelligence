@@ -18,7 +18,8 @@ class NameFetch(
         "mode",
         "method of name fetch",
         choices=[
-            lightbulb.Choice("id_ping", "id"),
+            lightbulb.Choice("id_ping", "id_ping"),
+            lightbulb.Choice("id_list", "id_list"),
             lightbulb.Choice("username_list", "username"),
             lightbulb.Choice("cache_list", "cache"),
         ],
@@ -29,6 +30,11 @@ class NameFetch(
         if self.mode == "id":  # ping everyone
             members = await ctx.client.rest.fetch_members(ctx.guild_id)
             names: list[str] = [f"<@{x.id}>" for x in members]
+            await ctx.respond(" ".join(names), user_mentions=members)
+            return
+        elif self.mode == "id":  # ping with no mention
+            members = await ctx.client.rest.fetch_members(ctx.guild_id)
+            names: list[str] = [f"<@{x.id}>" for x in members]
         elif self.mode == "username":  # list of usernames with no ping
             members = await ctx.client.rest.fetch_members(ctx.guild_id)
             names: list[str] = [f"@{x.username}" for x in members]
@@ -36,4 +42,4 @@ class NameFetch(
             members = ctx.client.app.cache.get_members_view_for_guild(ctx.guild_id)
             names: list[str] = [f"#{x}!" for x in members]
 
-        await ctx.respond(" ".join(names), user_mentions=members)
+        await ctx.respond(" ".join(names))
