@@ -74,16 +74,10 @@ class OllamaSettingsModal(miru.Modal, title="Ollama Settings"):
             and self.temperature.value
         ):
             try:
-                data_manager.add_element_to_json(
-                    "data.json", ["ai", "host"], self.host.value
-                )
-                data_manager.add_element_to_json(
-                    "data.json", ["ai", "port"], self.port.value
-                )
-                data_manager.add_element_to_json(
-                    "data.json", ["ai", "model"], self.model.value
-                )
-                data_manager.add_element_to_json(
+                add_element_to_json("data.json", ["ai", "host"], self.host.value)
+                add_element_to_json("data.json", ["ai", "port"], self.port.value)
+                add_element_to_json("data.json", ["ai", "model"], self.model.value)
+                add_element_to_json(
                     "data.json", ["ai", "temperature"], self.temperature.value
                 )
                 await ctx.respond("Settings saved!", flags=hikari.MessageFlag.EPHEMERAL)
@@ -115,11 +109,13 @@ class OllamaSettings(
         miru_client.start_modal(modal)
 
 
-# @lightbulb.option("prompt", "prompt", str, required=True)
-# @lightbulb.command("prompt", "Prompt")
-# @administration_only
 @ollama.register
-class OllamaPrompt(lightbulb.SlashCommand, name="prompt", description="prompt"):
+class OllamaPrompt(
+    lightbulb.SlashCommand,
+    name="prompt",
+    description="prompt",
+    hooks=[administration_only],
+):
     prompt = lightbulb.string("prompt", "prompt for AI")
 
     @lightbulb.invoke

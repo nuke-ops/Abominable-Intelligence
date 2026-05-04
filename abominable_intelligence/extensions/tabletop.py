@@ -201,11 +201,9 @@ DICE_REGEX = regex_compile(r"^\d+\s\d+$")
 
 @loader.listener(hikari.MessageCreateEvent)
 async def on_message_create(event: hikari.MessageCreateEvent) -> None:
-    if event.message.author.is_bot:
+    if event.message.author.is_bot or event.content[:6] != "!dice ":
         return
     message: str = event.content
-    if message[:6] != "!dice ":
-        return
 
     dice_command = message[6:].strip()  # Extract the part of the message after "!dice "
 
