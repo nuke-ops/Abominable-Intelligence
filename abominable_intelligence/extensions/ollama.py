@@ -41,10 +41,16 @@ def _buffered_call(
 ) -> Generator[tuple[str, dict[str, Any]], None, None]:
     buffer = ""
     for part in _call(prompt):
+        if "error" in part:
+            logging.warning("Ollama error: %s", part["error"])
+            return  # stops the generator, fallback message triggers
         if part.get("done"):
             yield buffer, part
             break
-        buffer += part["response"]
+        token = part.get("response", "")
+        if not token:
+            continue
+        buffer += token
         if len(buffer) >= 32:
             yield buffer, part
             buffer = ""
@@ -121,6 +127,7 @@ class OllamaPrompt(
     @lightbulb.invoke
     async def ollama_prompt(self, ctx: lightbulb.Context) -> None:
         response_content = ""
+        messages: list[hikari.Message] = []
         x = 0
         template = """Answer the prompt by following these rules:
     1. Keep your responses under 2000 characters.
@@ -128,16 +135,38 @@ class OllamaPrompt(
     3. Use Discord markdown syntax, eg. if it's code block, surround it with triple apostrophes and add the code language on the start eg. "```py"
     The prompt:
     """
+
+        async def get_or_create_message(page: int) -> hikari.Message:
+            if page < len(messages):
+                return messages[page]
+            new_msg = await ctx.client.app.rest.create_message(ctx.channel_id, "…")
+            messages.append(new_msg)
+            return new_msg
+
         async with ctx.client.app.rest.trigger_typing(ctx.channel_id):
             await ctx.respond(f"> {self.prompt}")
-            message = await ctx.interaction.fetch_initial_response()
+            messages.append(await ctx.interaction.fetch_initial_response())
+
             for buffer, _ in _buffered_call(template + self.prompt):
                 x += 1
                 if x > 5:
                     await ctx.client.app.rest.trigger_typing(ctx.channel_id)
                     x = 0
+
                 response_content += buffer
-                await message.edit(f"> {self.prompt} \n\n{response_content}")
+                # split into 2000-char pages and edit the message for each
+                chunks = [
+                    response_content[i : i + 2000]
+                    for i in range(0, len(response_content), 2000)
+                ]
+                for i, chunk in enumerate(chunks):
+                    msg = await get_or_create_message(i)
+                    await msg.edit(chunk)
+
+            if not response_content:
+                await messages[0].edit(
+                    "⚠️ No response from Ollama. Check that the service is running and the model/host settings are correct."
+                )
 
 
 loader.command(ollama, guilds=[bot_config["guild_id"]])
