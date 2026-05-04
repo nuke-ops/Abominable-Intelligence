@@ -18,16 +18,15 @@ class NameFetch(
         "mode",
         "method of name fetch",
         choices=[
-            lightbulb.Choice("id", "id"),
-            lightbulb.Choice("username", "username"),
-            lightbulb.Choice("cache", "cache"),
+            lightbulb.Choice("id_ping", "id"),
+            lightbulb.Choice("username_list", "username"),
+            lightbulb.Choice("cache_list", "cache"),
         ],
     )
 
     @lightbulb.invoke
     async def name_fetch(self, ctx: lightbulb.Context) -> None:
-        print(self.mode)
-        if self.mode == "id":  # ping with no mention
+        if self.mode == "id":  # ping everyone
             members = await ctx.client.rest.fetch_members(ctx.guild_id)
             names: list[str] = [f"<@{x.id}>" for x in members]
         elif self.mode == "username":  # list of usernames with no ping
@@ -37,4 +36,4 @@ class NameFetch(
             members = ctx.client.app.cache.get_members_view_for_guild(ctx.guild_id)
             names: list[str] = [f"#{x}!" for x in members]
 
-        await ctx.respond(" ".join(names))
+        await ctx.respond(" ".join(names), user_mentions=members)
