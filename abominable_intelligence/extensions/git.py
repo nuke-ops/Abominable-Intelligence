@@ -4,9 +4,12 @@ import traceback
 import hikari
 import lightbulb
 import miru
+from data_manager import config
 from extensions.core import Restart, error, is_admin, success
+from hooks import administration_only
 
 loader = lightbulb.Loader()
+bot_config = config()["bot"]
 git_group = lightbulb.Group("git", "Panel with git commands")
 
 
@@ -148,6 +151,7 @@ class Git(
     lightbulb.SlashCommand,
     name="panel",
     description="Panel with git commands",
+    hooks=[administration_only],
 ):
     @lightbulb.invoke
     async def invoke(
@@ -159,4 +163,4 @@ class Git(
         miru_client.start_view(view, bind_to=message)
 
 
-loader.command(git_group)
+loader.command(git_group, guilds=[bot_config["guild_id"]])
