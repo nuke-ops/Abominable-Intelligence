@@ -12,6 +12,9 @@ bot_config = config()["bot"]
 bot = hikari.GatewayBot(
     token=bot_config["token"],
     intents=hikari.Intents.ALL,
+    cache_settings=hikari.impl.CacheSettings(
+        components=hikari.api.CacheComponents.MEMBERS
+    ),
     logs={
         "version": 1,
         "incremental": True,
