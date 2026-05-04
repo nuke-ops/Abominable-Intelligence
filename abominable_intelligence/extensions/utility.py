@@ -27,12 +27,12 @@ class NameFetch(
 
     @lightbulb.invoke
     async def name_fetch(self, ctx: lightbulb.Context) -> None:
-        if self.mode == "id":  # ping everyone
+        if self.mode == "id_ping":  # ping everyone
             members = await ctx.client.rest.fetch_members(ctx.guild_id)
             names: list[str] = [f"<@{x.id}>" for x in members]
             await ctx.respond(" ".join(names), user_mentions=members)
             return
-        elif self.mode == "id":  # ping with no mention
+        elif self.mode == "id_list":  # ping with no mention
             members = await ctx.client.rest.fetch_members(ctx.guild_id)
             names: list[str] = [f"<@{x.id}>" for x in members]
         elif self.mode == "username":  # list of usernames with no ping

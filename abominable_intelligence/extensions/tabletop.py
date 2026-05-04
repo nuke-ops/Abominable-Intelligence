@@ -72,7 +72,7 @@ def roll_all_dice(dice: int, sides: int) -> tuple[list[int], int]:
 
 def format_roll_as_ansi(roll: int, sides: int) -> str:
     """
-    Formats a dice roll result using ANSI codes for better visual clarity in Discord.
+    Formats the dice roll result using ANSI codes for better visual clarity in Discord.
 
     Explanation:
         Discord does not allow removing bold effect from text in embed fields.
@@ -201,7 +201,7 @@ DICE_REGEX = regex_compile(r"^\d+\s\d+$")
 
 @loader.listener(hikari.MessageCreateEvent)
 async def on_message_create(event: hikari.MessageCreateEvent) -> None:
-    if event.message.author.is_bot or not event.content:
+    if event.message.author.is_bot:
         return
     message: str = event.content
     if message[:6] != "!dice ":
