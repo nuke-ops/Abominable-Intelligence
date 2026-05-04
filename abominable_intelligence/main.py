@@ -34,7 +34,10 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     )
     # core extensions
     await client.load_extensions(
-        "extensions.core", "extensions.listeners", "extensions.git"
+        "extensions.core",
+        "extensions.listeners",
+        "extensions.git",
+        "extensions.utility",
     )
 
     # general use extensions
