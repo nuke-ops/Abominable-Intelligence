@@ -41,5 +41,22 @@ class NameFetch(
         elif self.mode == "cache":  # raw list of IDs
             members = ctx.client.app.cache.get_members_view_for_guild(ctx.guild_id)
             names: list[str] = [f"#{x}!" for x in members]
+        else:
+            return
 
-        await ctx.respond(" ".join(names))
+        # Split into chunks under 2000 chars
+        chunks: list[str] = []
+        current = ""
+        for name in names:
+            entry = name + " "
+            if len(current) + len(entry) > 1900:
+                chunks.append(current.strip())
+                current = entry
+            else:
+                current += entry
+        if current:
+            chunks.append(current.strip())
+
+        await ctx.respond(chunks[0])
+        for chunk in chunks[1:]:
+            await ctx.client.rest.create_message(ctx.channel_id, chunk)
