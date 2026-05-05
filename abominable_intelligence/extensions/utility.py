@@ -59,4 +59,4 @@ class NameFetch(
 
         await ctx.respond(chunks[0])
         for chunk in chunks[1:]:
-            await ctx.client.rest.create_message(ctx.channel_id, chunk)
+            await ctx.respond(chunk)
