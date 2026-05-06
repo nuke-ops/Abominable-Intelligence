@@ -61,7 +61,7 @@ class Gw2API:
         exclude = ["guilds", "guild_leader", "commander", "daily_ap", "monthly_ap"]
         account_info = "\n".join(
             [
-                f"[2;31m{key}[0m: {_convert_value(key, value)}"
+                f"\x1b[2;31m{key}\x1b[0m: {_convert_value(key, value)}"
                 for key, value in account_info_json.items()
                 if key not in exclude
             ]

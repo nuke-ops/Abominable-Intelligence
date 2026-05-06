@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import traceback
 
@@ -60,12 +61,18 @@ class Restart(
     async def restart(self, ctx: lightbulb.Context):
         await ctx.respond("Restarting the bot...")
         await ctx.client.app.rest.trigger_typing(ctx.channel_id)
+        # Try to restart the process with the previous arguments and the channel ID for the on_ready() event
         try:
-            # Restart the process with the previous arguments and the channel ID for the on_ready() event
-            os.execv(
-                sys.executable,
-                ["python"] + sys.argv + ["restarted", str(ctx.channel_id)],
-            )
+            script = os.path.abspath(__file__)
+            main_script = os.path.join(os.path.dirname(script), "..", "main.py")
+            main_script = os.path.normpath(main_script)
+            uv = shutil.which("uv")
+            env = os.environ.copy()
+            env["BOT_RESTARTED_CHANNEL"] = str(ctx.channel_id)
+            if uv:
+                os.execve(uv, ["uv", "run", main_script], env)
+            else:
+                os.execve(sys.executable, [sys.executable, main_script], env)
         except Exception:
             await ctx.respond("Restart failed")
             traceback.print_exc()

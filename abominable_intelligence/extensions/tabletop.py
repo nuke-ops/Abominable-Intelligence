@@ -87,7 +87,7 @@ def format_roll_as_ansi(roll: int, sides: int) -> str:
     Returns:
         A string containing the formatted roll with ANSI coloring.
     """
-    ansi_color = "[1;31m" if roll == 1 or roll == sides else "[1;33m"
+    ansi_color = "\x1b[1;31m" if roll == 1 or roll == sides else "\x1b[1;33m"
     return f"```ansi\n{ansi_color}{roll}```"
 
 
