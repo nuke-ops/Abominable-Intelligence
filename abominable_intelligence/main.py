@@ -32,6 +32,7 @@ miru_client = miru.Client(bot)
 
 
 @bot.listen(hikari.StartingEvent)
+async def on_starting(event: hikari.StartingEvent) -> None:
     # save miru's client
     client.di.registry_for(lightbulb.di.Contexts.DEFAULT).register_value(
         miru.Client, miru_client
