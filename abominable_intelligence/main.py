@@ -1,4 +1,6 @@
+import logging
 import os
+import traceback
 
 import hikari
 import lightbulb
@@ -52,6 +54,18 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     # external extensions
     if os.path.exists(bot_dir + "/extensions/test.py"):
         await client.load_extensions("extensions.test")
+
+    try:
+        print("Bot started, I think")
+        logging.info("Abominable intelligence has started!")
+        channel_id = os.environ.get("BOT_RESTARTED_CHANNEL")
+        if channel_id:
+            del os.environ["BOT_RESTARTED_CHANNEL"]
+            await event.app.rest.create_message(
+                channel=int(channel_id), content="Restart succeeded"
+            )
+    except Exception:
+        traceback.print_exc()
 
     await client.start()
 
